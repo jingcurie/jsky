@@ -1,0 +1,148 @@
+/* 颜色和整体布局优化 */
+/* 全局样式 */
+/* body {
+  font-family: "Arial", sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  text-align: center;
+} */
+
+/* 标题 */
+@import url("subMenuPage.css");
+h2 {
+  font-size: 24px;
+  color: #012c5d;
+  /* margin-top:2rem; */
+}
+
+image{
+  width:100%;
+}
+
+h3 {
+    font-size: 24px;
+    color: #007bff;
+    margin-top:2rem;
+  }
+
+.route-search{
+  text-align: center;
+  
+}
+
+.route-search h2{
+  margin-top: 3rem;
+}
+
+
+/* 输入框 & 选择框 */
+/* .input-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+input,
+select {
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+} */
+
+input:focus,
+select:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0, 91, 187, 0.5);
+}
+
+/* 按钮样式 */
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* 美化选择框 */
+.input-container select {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  appearance: none;
+  background-color: white;
+}
+
+/* 按钮样式 */
+.input-container button {
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.input-container button:hover {
+  background-color: #0056b3;
+}
+
+/* 线路标题 */
+#lineTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 2rem;
+  color: #333;
+}
+
+#lineMap {
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+#stations {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+}
+.station {
+  background: white !important;
+  color: #333 !important;
+  font-size: 16px !important;
+  font-weight: bold;
+  border: none !important;
+}
+
+.line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.featureImageSection{
+  margin-top:2rem;
+  /* border:1px solid red; */
+}
+

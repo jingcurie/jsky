@@ -1,0 +1,266 @@
+/* 轮播图横幅 */
+.banner {
+    position: relative;
+    width: 100%;
+    height: 45vw;
+    overflow: hidden;
+}
+
+.banner img {
+    width: 100%;
+    height: 45vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* opacity: 0; */
+    /* transition: opacity 1.5s ease-in-out; */
+    object-fit: cover;
+}
+
+.banner>div>div{
+    position:absolute;
+    top:3rem;
+    width:30%;
+    left:1rem;
+    color:#002147;
+    font-size:1.5rem;
+    background-color:#FFFFFF44;
+    border-radius: 20px;
+    padding:2rem;
+    /* opacity:0; */
+    /* transition: opacity 1.5s ease-in-out; */
+}
+
+/* .banner>div>div.active{
+    opacity:1;
+}
+
+.banner img.active {
+    opacity:1;
+} */
+/* 图片和文字描述容器的过渡效果 */
+/* 图片和文字的过渡动画（更快、更平滑） */
+#banner-image, .banner-desc {
+    transition: opacity 1.5s ease-in-out; /* 更自然的动画曲线 */
+}
+
+/* 淡出状态 */
+#banner-image.fade-out, .banner-desc.fade-out {
+    opacity: 0;
+}
+
+/* 淡入状态 */
+#banner-image.fade-in, .banner-desc.fade-in {
+    opacity: 1;
+}
+
+.content-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    justify-items:stretch;
+    gap:2rem;
+    margin-top:2rem;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+}
+
+
+/* 线路查询样式 */
+.routes {
+    background-color: #f8f9fa;
+    padding: 30px;
+/*    text-align: center;*/
+}
+
+.routes h2 {
+    color: #002147;
+    margin-bottom: 10px;
+}
+
+.routes p {
+    font-size: 18px;
+    color: #333;
+}
+
+/* 最新新闻样式 */
+.news {
+    background-color: white;
+    text-align: left;
+}
+.news .card{
+    padding-bottom:0.1rem;
+    border-radius:5px;
+}
+
+.news .card h2{
+    position:absolute;
+    left:0;
+    top:20%;
+    font-size:40pt;
+    padding:1rem 3rem;
+    background-color:#002147;
+    color:white;
+    letter-spacing: 1rem;
+  }
+
+.announcements{
+    background-color:#f1f6f7;
+}
+.announcements-container {
+    max-width:1600px;
+    margin:auto;
+    padding: 20px;
+    
+}
+.announcement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.more-announcements {
+    margin-top: 40px;
+}
+
+
+
+ /* 响应式设计 */
+@media screen and (max-width: 1024px) {
+    .routes{
+        padding:10px;
+        margin-bottom:2rem;
+    }
+
+    .logo h1 img{
+        width:300px;
+    }
+
+    .banner h2{
+        font-size: 1.5rem;
+    }
+    .banner>div>div{
+        font-size: 1rem;
+        padding:1.5rem;
+        width:50%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .banner {
+        position: static;
+        width: 100%;
+        height: auto;
+    }
+
+    .banner img {
+        width: 100%;
+        height: 45vw;
+        position: static;
+        font-size:0;
+    }
+
+    .banner>div>div{
+        position: static;
+        width:96%;
+        font-size:1.5rem;
+        background-color:#FFFFFF44;
+        padding:1rem;
+        background:#002147;
+        /* border:1px solid red; */
+        border-radius: 0;
+        margin-top:-3px;
+    }
+
+    .banner>div>div>h2{
+        color:white;
+        font-size:14pt;
+        
+    }
+
+    .banner>div>div>p{
+        color:white;
+        font-size:12pt;
+    }
+
+    
+    .content-wrapper, .announcement-grid {
+        grid-template-columns: 1fr;
+        align-items: center;
+        gap:0rem;
+        margin-top:0;
+    }
+
+    .routes{
+        padding-bottom:2rem;
+    }
+    
+    .routes, .news {
+        width: 95%;
+        margin:auto;
+    }
+
+    .news{
+        margin-top:1.5rem;
+    }
+
+    .news .card h2{
+        font-size:20pt;
+    }
+
+    .announcement {
+        width: 100%;
+    }
+
+    /* .banner>div>div{
+        font-size: 1rem;
+        width:80%;
+        top:10%;
+        padding:0.5rem;
+    } */
+
+    .banner>div>div h2{
+        margin:0.5rem;
+        padding:0;
+    }
+
+    .content-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    
+}
+
+/* article css/
+.article-header {
+    background-color: #00447c;
+    color: white;
+    padding: 15px 0;
+    text-align: center;
+}
+
+.article-header h1 {
+    margin-bottom: 10px;
+}
+
+.article-header nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.article-header nav ul li {
+    display: inline;
+}
+
+.article-header nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.article-header nav ul li a:hover {
+    text-decoration: underline;
+}
+

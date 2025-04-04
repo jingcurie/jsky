@@ -1,0 +1,161 @@
+/* 主要内容区域 */
+.article-main {
+    padding: 0px 2rem;
+    display:grid;
+    grid-template-columns: 1fr 4fr;
+    max-width:1600px;
+    margin:auto;
+    gap:2rem;
+}
+
+/* sidebar的样式 */
+.article-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh; /* 侧边栏高度为视口高度 */
+    overflow-y: auto; /* 如果内容超出，允许滚动 */
+    margin-top:3rem;
+    
+}
+/* .article-sidebar{
+    margin-top:3rem;
+} */
+.article-sidebar h2 {
+    font-size: 1.5rem; /* 使用相对单位 */
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding-bottom:1rem;
+    padding-left:0.5rem;
+    border-bottom:1px solid #d0d2d4;
+    color: #002147;
+}
+
+.article-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.article-sidebar li {
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase; /* 全部大写 */
+    transition: background 0.3s, color 0.3s;
+}
+
+.article-sidebar li a:focus {
+    outline: 2px solid #0055a9; /* 添加焦点边框 */
+    outline-offset: 2px;
+}
+
+/* sidebar的样式 普通状态 */
+.article-sidebar li a {
+    text-decoration: none;
+    color: black;
+    display: block;
+}
+
+/* sidebar的样式 鼠标悬停时 */
+.article-sidebar li:hover {
+    background-color: #0055a9; /* 蓝色 */
+}
+
+.article-sidebar li:hover a {
+    color: white;
+}
+
+/* sidebar的样式 当前选中项（active）的样式 */
+.article-sidebar li.active {
+    background-color: #dddede;
+}
+
+.article-sidebar li.active a {
+    color: black;
+}
+
+.article-content p{
+    line-height: 1.5
+}
+
+.article-content img {
+    max-width: 100%; /* 确保不会超过父容器宽度 */
+    height: auto; /* 保持原始比例 */
+}
+
+.article-content img[width][height] {
+    width: auto; /* 让手动指定宽高的图片不被100%影响 */
+    max-width: 100%; /* 但是仍然不能超过父容器 */
+    height: auto; /* 让图片高度按比例调整 */
+}
+
+@import url("article_content_style.css");       /* 导入重置样式 */
+
+@media (max-width: 768px) {
+    .article-main {
+        grid-template-columns: 1fr; /* 侧边栏和内容垂直堆叠 */
+        padding: 0 1rem; /* 减少内边距 */
+    }
+    .article-sidebar {
+        /* position: static; */
+        margin-top:1rem;
+        height:auto;
+        border-width: 0;
+        background-color:#ffffffff;
+        z-index:10;
+    }
+
+    .articles-grid{
+        grid-template-columns: 1fr;
+        padding-top:0;
+    }
+
+}
+
+
+img.align-left {
+    float: left;
+    margin-right: 15px;
+}
+
+img.align-right {
+    float: right;
+    margin-left: 15px;
+}
+
+img.mx-auto.d-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.mce-content-body {
+    font-family: "Microsoft YaHei", "SimSun", "SimHei", "KaiTi", "FangSong", Arial, sans-serif !important;
+}
+
+.tox-notification--in {
+    display: none !important;
+}
+
+.tox-notification {
+    display: none !important;
+}
+
+span.float-left { 
+    /* display: inline-block;  */
+    float: left; 
+    margin-right: 15px; 
+    margin-bottom: 10px; 
+}
+
+span.float-right { 
+    /* display: inline-block;  */
+    float: right; 
+    margin-left: 15px; 
+    margin-bottom: 10px; 
+}
+
+
+
+
+

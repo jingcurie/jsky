@@ -1,0 +1,242 @@
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require '../includes/db.php';
+require '../includes/auth.php';
+require '../includes/functions.php';
+
+if (!isLoggedIn()) {
+    redirect('login.php');
+}
+
+// 获取分类 ID 和名称
+$category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : null;
+if ($category_id) {
+    $category = getById($conn, 'categories', 'id', $category_id);
+    $category_name = $category ? $category['name'] : '未知分类';
+} else {
+    redirect('categories.php');
+}
+
+// 单个删除文章（原有逻辑不变）
+if (isset($_GET['delete_id'])) {
+    if (delete($conn, 'articles', 'id', $_GET['delete_id'])) {
+        redirect("articles.php?category_id=$category_id");
+    } else {
+        $error = "删除文章失败";
+    }
+}
+
+// 新增：批量删除处理
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete'])) {
+    if (!empty($_POST['selected_articles'])) {
+        $ids = implode(',', array_map('intval', $_POST['selected_articles']));
+        $sql = "DELETE FROM articles WHERE id IN ($ids) AND category_id = ?";
+        $stmt = $conn->prepare($sql);
+        if ($stmt->execute([$category_id])) {
+            $_SESSION['success_message'] = '成功删除选中的文章';
+            redirect("articles.php?category_id=$category_id");
+        } else {
+            $error = "批量删除失败";
+        }
+    } else {
+        $error = "请先选择要删除的文章";
+    }
+}
+
+// [保持原有分页、排序、状态筛选代码不变]
+$records_per_page = 20;
+$current_page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$sort_column = isset($_GET['sort']) && in_array($_GET['sort'], ['title', 'author', 'created_at', 'updated_at', 'view_count', 'status']) ? $_GET['sort'] : 'created_at';
+$sort_order = isset($_GET['order']) && $_GET['order'] === 'asc' ? 'ASC' : 'DESC';
+
+$statusBadge = [
+    'draft' => ['color' => 'secondary', 'icon' => 'fa-edit', 'text' => '草稿'],
+    'published' => ['color' => 'success', 'icon' => 'fa-check-circle', 'text' => '已发布'],
+    'archived' => ['color' => 'dark', 'icon' => 'fa-archive', 'text' => '已归档']
+];
+
+$statusFilter = $_GET['status'] ?? '';
+$where = "WHERE category_id = ?";
+$params = [$category_id];
+
+if ($statusFilter && array_key_exists($statusFilter, $statusBadge)) {
+    $where .= " AND status = ?";
+    $params[] = $statusFilter;
+}
+
+$total_records = query($conn, "SELECT COUNT(*) FROM articles $where", $params)[0]['COUNT(*)'];
+$total_pages = max(1, ceil($total_records / $records_per_page));
+
+$offset = ($current_page - 1) * $records_per_page;
+$articles = query(
+    $conn,
+    "SELECT * FROM articles 
+     $where 
+     ORDER BY $sort_column $sort_order 
+     LIMIT $records_per_page OFFSET $offset",
+    $params
+);
+?>
+
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <style>
+        .checkbox-cell {
+            width: 40px;
+        }
+
+        #bulkDeleteBtn[disabled] {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <h2><i class="fas fa-newspaper"></i> <?= htmlspecialchars($category_name) ?> 文章管理</h2>
+
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <div class="alert alert-success"><?= $_SESSION['success_message'];
+                                                unset($_SESSION['success_message']); ?></div>
+        <?php endif; ?>
+
+        <div class="d-flex justify-content-between mb-3">
+            <a href="article_form.php?category_id=<?= $category_id ?>" class="btn btn-create">
+                <i class="fas fa-plus"></i> 新建文章
+            </a>
+
+            <button type="button" id="bulkDeleteBtn" class="btn btn-danger" disabled
+                data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                <i class="fas fa-trash"></i> 批量删除 (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <div class="btn-group btn-group-sm mb-3" role="group">
+            <a href="?category_id=<?= $category_id ?>"
+                class="btn btn-outline-secondary <?= !isset($_GET['status']) ? 'active' : '' ?>">
+                全部
+            </a>
+            <?php foreach ($statusBadge as $key => $config): ?>
+                <a href="?category_id=<?= $category_id ?>&status=<?= $key ?>"
+                    class="btn btn-outline-<?= $config['color'] ?> <?= ($_GET['status'] ?? '') === $key ? 'active' : '' ?>">
+                    <i class="fas <?= $config['icon'] ?>"></i> <?= $config['text'] ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
+        <form id="bulkActionForm" method="post">
+            <table class="table table-bordered table-hover text-center">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=status&order=<?= $sort_column === 'status' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">
+                                状态 <i class="fas <?= $sort_column === 'status' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i>
+                            </a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=title&order=<?= $sort_column === 'title' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">标题 <i class="fas <?= $sort_column === 'title' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=author&order=<?= $sort_column === 'author' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">作者 <i class="fas <?= $sort_column === 'author' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=created_at&order=<?= $sort_column === 'created_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">创建时间 <i class="fas <?= $sort_column === 'created_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=updated_at&order=<?= $sort_column === 'updated_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">修改时间 <i class="fas <?= $sort_column === 'updated_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=view_count&order=<?= $sort_column === 'view_count' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">访问量 <i class="fas <?= $sort_column === 'view_count' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th>封面图片</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($articles as $article): ?>
+                        <tr>
+                            <td class="checkbox-cell">
+                                <input type="checkbox" name="selected_articles[]" value="<?= $article['id'] ?>" class="form-check-input article-checkbox">
+                            </td>
+                            <td>
+                                <?php $status = $article['status'] ?? 'draft'; ?>
+                                <span class="badge bg-<?= $statusBadge[$status]['color'] ?> rounded-pill d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip"
+                                    title="最后修改: <?= $article['updated_at'] ?>">
+                                    <i class="fas <?= $statusBadge[$status]['icon'] ?> me-1"></i>
+                                    <?= $statusBadge[$status]['text'] ?>
+                                </span>
+                            </td>
+                            <td><?= htmlspecialchars($article['title']) ?></td>
+                            <td><?= htmlspecialchars($article['author']) ?></td>
+                            <td><?= htmlspecialchars($article['created_at']) ?></td>
+                            <td><?= htmlspecialchars($article['updated_at']) ?></td>
+                            <td><?= htmlspecialchars($article['view_count']) ?></td>
+                            <td>
+                                <?php if (!empty($article['cover_image'])): ?>
+                                    <img src="/assets/images/uploads/<?= htmlspecialchars($article['cover_image']) ?>" alt="封面" style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                <?php else: ?>
+                                    <img src="/assets/images/default_cover_image.jpg" alt="封面" style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <a href="view.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> 查看</a>
+                                <a href="article_form.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> 修改</a>
+
+
+                                <button class="btn btn-danger btn-sm"
+                                    onclick="event.preventDefault(); openDeleteModal('<?= htmlspecialchars(addslashes($article['title'])) ?>', 'articles.php?category_id=<?= $category_id ?>&delete_id=<?= $article['id'] ?>')">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+
+
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <div class="pagination-container">
+                <?php
+                $pagination_params = [
+                    'category_id' => $category_id,
+                    'sort' => $sort_column,
+                    'order' => $sort_order,
+                    'status' => $statusFilter
+                ];
+                ?>
+                <a href="?<?= http_build_query(array_merge($pagination_params, ['page' => max(1, $current_page - 1)])) ?>"
+                    class="btn btn-secondary <?= $current_page == 1 ? 'disabled' : '' ?>">
+                    <i class="fas fa-arrow-left"></i> 上一页
+                </a>
+                <select class="form-select w-auto" id="pageSelect"
+                    onchange="location.href='?<?= http_build_query($pagination_params) ?>&page='+this.value">
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <option value="<?= $i ?>" <?= $i == $current_page ? 'selected' : '' ?>>第 <?= $i ?> 页</option>
+                    <?php endfor; ?>
+                </select>
+                <a href="?<?= http_build_query(array_merge($pagination_params, ['page' => min($total_pages, $current_page + 1)])) ?>"
+                    class="btn btn-secondary <?= $current_page == $total_pages ? 'disabled' : '' ?>">
+                    下一页 <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </form>
+
+        
+
+        <!-- 原有删除模态框（确保存在且不变） -->
+        <?php require '../includes/delete_modal.php'; ?>
+        
+        <script src="/assets/js/admin.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+    </div>
+</body>
+
+</html>

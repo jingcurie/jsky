@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>菜单管理</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link href="../assets/css/admin_style.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <style>
+      /* 菜单树整体样式 */
+      .menu-tree {
+        list-style-type: none;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      /* 左侧垂直连接线，贯穿整个菜单树 */
+      .menu-tree::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 15px;
+        width: 2px;
+        height: 100%;
+        background-color: #ccc;
+      }
+
+      /* 每个菜单项 */
+      .menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 15px;
+        /* border: 1px solid #ddd; */
+        margin: 5px 0;
+        border-radius: 5px;
+        position: relative;
+        /* background-color: #b3e4e4; 你的背景色 */
+        width: fit-content;
+        min-width: 200px;
+      }
+
+      /* 父子菜单的连接横线 */
+      .menu-item::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: -10px;
+        width: 10px;
+        height: 2px;
+        background-color: #ccc;
+      }
+
+      /* 让按钮始终靠近菜单项，但不贴太紧 */
+      .menu-actions {
+        display: flex;
+        gap: 10px; /* 按钮与文本之间的间距 */
+        margin-left: 15px; /* 让按钮不会贴在文字上 */
+      }
+
+      /* 统一按钮样式，避免 Bootstrap 影响 */
+      /* .menu-actions button {
+        padding: 5px 10px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+      }
+
+      .menu-actions .edit-btn {
+        background-color: #ffcc00;
+        color: #000;
+      }
+
+      .menu-actions .delete-btn {
+        background-color: #ff4d4d;
+        color: white;
+      } */
+    </style>
+  </head>
+  <body>
+
+
+    <div class="container mt-4">
+      <h2 class="mb-3"><i class="fas fa-list"></i> 菜单管理</h2>
+      <button class="btn btn-create" onclick="showMenuModal()">
+        <i class="fas fa-plus"></i> 添加菜单
+      </button>
+      <ul id="menuTree" class="menu-tree"></ul>
+    </div>
+
+    <!-- 菜单模态框 -->
+    <div class="modal fade" id="menuModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">编辑菜单</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="menuId" />
+            <div class="mb-3">
+              <label class="form-label">菜单名称</label>
+              <input type="text" id="menuName" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">菜单类型</label>
+              <select id="menuType" class="form-select">
+                <option value="non-article">非文章</option>
+                <option value="article">文章</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">链接 URL</label>
+              <input type="text" id="menuUrl" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">对应的文章分类（可选）</label>
+              <select id="articleCategory" class="form-select">
+                <option value="">无（不关联分类）</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">父级菜单</label>
+              <select id="parentMenu" class="form-select"></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">排序编号</label>
+              <input
+                type="number"
+                id="menuSortOrder"
+                class="form-control"
+                min="1"
+                step="1"
+              />
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="menuActive" />
+              <label class="form-check-label">启用</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button type="button" class="btn btn-primary" onclick="saveMenu()">
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(fetchMenus);
+
+      // 监听 menuType 变化，自动填充或清空 URL
+      $("#menuType").change(function () {
+        if ($(this).val() === "article") {
+          $("#menuUrl").val("showSubMenuPage.php").prop("disabled", true);
+        } else {
+          $("#menuUrl").val("").prop("disabled", false);
+        }
+      });
+
+      function fetchMenus() {
+        $.get("menu.php?action=fetch", function (data) {
+          let menus = data;
+          renderMenuTree(menus, $("#menuTree"));
+        });
+      }
+
+      function renderMenuTree(menus, container) {
+        container.empty();
+        menus.forEach((menu) => {
+          let li = $(`<li class="menu-item">`).html(
+            `${menu.name} <span class="text-muted">(${menu.sort_order})</span>`
+          );
+          let actions = $('<span class="menu-actions">')
+            .append(
+              '<button class="btn btn-sm btn-warning" onclick="editMenu(' +
+                menu.id +
+                ')">编辑</button> '
+            )
+            .append(
+              '<button class="btn btn-sm btn-danger" onclick="confirmDelete(' +
+                menu.id +
+                ')">删除</button>'
+            );
+          li.append(actions);
+          let subList = $('<ul class="menu-tree">');
+          renderMenuTree(menu.children, subList);
+          li.append(subList);
+          container.append(li);
+        });
+      }
+
+      function showMenuModal(id = "") {
+        fetchCategories();
+        $("#menuId").val(id);
+        $("#menuName").val("");
+        $("#menuUrl").val("");
+        $("#menuActive").prop("checked", true);
+        $("#parentMenu").html('<option value="">无（顶级菜单）</option>');
+
+        // 获取所有菜单数据
+        $.get("menu.php?action=fetch", function (data) {
+          let menus = typeof data === "string" ? data : data;
+          populateParentMenu(menus, $("#parentMenu"));
+        });
+
+        $("#menuModal").modal("show");
+      }
+
+      function editMenu(id) {
+        $.get("menu.php?action=get&id=" + id, function (data) {
+          let menu = data;
+          $("#menuId").val(menu.id);
+          $("#menuName").val(menu.name);
+          $("#menuUrl").val(menu.url);
+          $("#menuSortOrder").val(menu.sort_order);
+          $("#menuActive").prop("checked", menu.is_active == 1);
+          $("#menuType").val(menu.menu_type); // 设置 menu_type
+          $("#parentMenu").html('<option value="">无（顶级菜单）</option>');
+
+          // 文章类型时，禁用 URL 并填充默认值
+          if (menu.menu_type === "article") {
+            $("#menuUrl").val("showSubMenuPage.php").prop("disabled", true);
+          } else {
+            $("#menuUrl").prop("disabled", false);
+          }
+
+          // 先加载分类，再选中已保存的分类
+          fetchCategories();
+          setTimeout(() => {
+            $("#articleCategory").val(menu.article_category_id);
+          }, 500);
+
+          // 获取所有菜单数据，填充父菜单
+          $.get("menu.php?action=fetch", function (data) {
+            let menus = data;
+            menus.forEach((m) => {
+              if (m.id !== menu.id) {
+                let selected = m.id == menu.parent_id ? "selected" : "";
+                $("#parentMenu").append(
+                  `<option value="${m.id}" ${selected}>${m.name}</option>`
+                );
+              }
+            });
+          });
+
+          $("#menuModal").modal("show");
+        });
+      }
+
+      function saveMenu() {
+        let data = {
+          id: $("#menuId").val(),
+          name: $("#menuName").val(),
+          url: $("#menuUrl").val(),
+          sort_order: $("#menuSortOrder").val(),
+          is_active: $("#menuActive").prop("checked") ? 1 : 0,
+          parent_id: $("#parentMenu").val(),
+          article_category_id: $("#articleCategory").val() || null,
+          menu_type: $("#menuType").val(),
+        };
+
+        $.post("menu.php?action=save", data, function (response) {
+          fetchMenus();
+          $("#menuModal").modal("hide");
+        });
+      }
+
+      function confirmDelete(id) {
+        let modalHtml = `
+                <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-danger">警告</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>删除此菜单项将会删除其所有子项，且无法恢复。确定删除吗？</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-danger" onclick="deleteMenu(${id})">确定删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        $("body").append(modalHtml);
+        $("#deleteConfirmModal").modal("show");
+      }
+
+      function deleteMenu(id) {
+        $.post("menu.php?action=delete", { id: id }, function (response) {
+          fetchMenus();
+          $("#deleteConfirmModal").modal("hide");
+          $("#deleteConfirmModal").remove();
+        });
+      }
+
+      //递归列出所有可能的父菜单
+      function populateParentMenu(menus, selectElement, level = 0) {
+        menus.forEach((menu) => {
+          let prefix = "—".repeat(level); // 生成前缀表示层级
+          selectElement.append(
+            `<option value="${menu.id}">${prefix} ${menu.name}</option>`
+          );
+
+          if (menu.children && menu.children.length > 0) {
+            populateParentMenu(menu.children, selectElement, level + 1);
+          }
+        });
+      }
+
+      function fetchCategories() {
+        $.get("menu.php?action=categories", function (data) {
+          let categorySelect = $("#articleCategory");
+          categorySelect.html('<option value="">无（不选择）</option>');
+          data.forEach((cat) => {
+            // alert(cat.id + " " + cat.name);
+            categorySelect.append(
+              `<option value="${cat.id}">${cat.name}</option>`
+            );
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

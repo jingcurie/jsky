@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>上海公交线路交互地图</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; overflow: hidden; }
+        #map-container { width: 100%; height: 80vh; border: 1px solid #ddd; position: relative; }
+        svg { background: #f9f9f9; cursor: grab; }
+        .station { fill: #333; cursor: pointer; }
+        .station:hover { fill: #FF5722; }
+        .station-text { font-size: 10px; fill: #555; pointer-events: none; }
+        .route { transition: stroke-width 0.2s; }
+        .route:hover { stroke-width: 6px !important; }
+        #info-panel { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            background: white; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .legend { margin-top: 10px; }
+        .legend-item { display: inline-block; margin-right: 15px; }
+        .legend-color { width: 15px; height: 3px; display: inline-block; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h2>上海5条公交线路交互地图</h2>
+    <div id="map-container">
+        <svg id="bus-map" width="100%" height="100%"></svg>
+        <div id="info-panel"></div>
+    </div>
+    <div class="legend">
+        <div class="legend-item"><span class="legend-color" style="background: #FF5252;"></span>49路</div>
+        <div class="legend-item"><span class="legend-color" style="background: #4CAF50;"></span>911路</div>
+        <div class="legend-item"><span class="legend-color" style="background: #2196F3;"></span>71路</div>
+        <div class="legend-item"><span class="legend-color" style="background: #FFC107;"></span>10路</div>
+        <div class="legend-item"><span class="legend-color" style="background: #9C27B0;"></span>20路</div>
+    </div>
+
+    <script>
+        // 公交线路数据
+        const busRoutes = [
+          { 
+            name: "49路", 
+            color: "#FF5252", 
+            stations: [
+              { name: "上海体育馆", lng: 121.441, lat: 31.185 },
+              { name: "徐家汇", lng: 121.438, lat: 31.198 },
+              { name: "衡山路", lng: 121.448, lat: 31.207 },
+              { name: "静安寺", lng: 121.451, lat: 31.223 },
+              { name: "南京西路", lng: 121.460, lat: 31.231 },
+              { name: "汉口路", lng: 121.485, lat: 31.238 }
+            ] 
+          },
+          { 
+            name: "911路", 
+            color: "#4CAF50", 
+            stations: [
+              { name: "老西门", lng: 121.487, lat: 31.222 },
+              { name: "淮海中路", lng: 121.470, lat: 31.220 },
+              { name: "常熟路", lng: 121.453, lat: 31.215 },
+              { name: "徐家汇", lng: 121.438, lat: 31.198 },
+              { name: "虹桥路", lng: 121.427, lat: 31.202 }
+            ] 
+          },
+          { 
+            name: "71路", 
+            color: "#2196F3", 
+            stations: [
+              { name: "延安东路外滩", lng: 121.492, lat: 31.239 },
+              { name: "人民广场", lng: 121.475, lat: 31.233 },
+              { name: "静安寺", lng: 121.451, lat: 31.223 },
+              { name: "中山公园", lng: 121.417, lat: 31.218 },
+              { name: "虹桥路", lng: 121.427, lat: 31.202 }
+            ] 
+          },
+          { 
+            name: "10路", 
+            color: "#FFC107", 
+            stations: [
+              { name: "虹桥路", lng: 121.427, lat: 31.202 },
+              { name: "交通大学", lng: 121.435, lat: 31.198 },
+              { name: "徐家汇", lng: 121.438, lat: 31.198 },
+              { name: "上海图书馆", lng: 121.446, lat: 31.212 },
+              { name: "武康路", lng: 121.450, lat: 31.215 }
+            ] 
+          },
+          { 
+            name: "20路", 
+            color: "#9C27B0", 
+            stations: [
+              { name: "中山公园", lng: 121.417, lat: 31.218 },
+              { name: "静安寺", lng: 121.451, lat: 31.223 },
+              { name: "南京西路", lng: 121.460, lat: 31.231 },
+              { name: "人民广场", lng: 121.475, lat: 31.233 },
+              { name: "外滩", lng: 121.492, lat: 31.239 }
+            ] 
+          }
+        ];
+
+        // 初始化SVG和交互参数
+        const svg = document.getElementById("bus-map");
+        const infoPanel = document.getElementById("info-panel");
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        // 经纬度映射到SVG坐标（考虑缩放和平移）
+        function project(lng, lat) {
+            const lngRange = { min: 121.40, max: 121.50 };
+            const latRange = { min: 31.18, max: 31.24 };
+            const x = ((lng - lngRange.min) / (lngRange.max - lngRange.min)) * 800 * scale + panX;
+            const y = 600 * scale - ((lat - latRange.min) / (latRange.max - latRange.min)) * 600 * scale + panY;
+            return { x, y };
+        }
+
+        // 绘制地图
+        function drawMap() {
+            svg.innerHTML = '';
+            
+            // 绘制线路
+            busRoutes.forEach(route => {
+                const points = route.stations.map(station => {
+                    const { x, y } = project(station.lng, station.lat);
+                    return `${x},${y}`;
+                }).join(" ");
+
+                const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                polyline.setAttribute("points", points);
+                polyline.setAttribute("stroke", route.color);
+                polyline.setAttribute("stroke-width", "3");
+                polyline.setAttribute("fill", "none");
+                polyline.setAttribute("class", "route");
+                polyline.setAttribute("data-route", route.name);
+                svg.appendChild(polyline);
+
+                // 绘制站点
+                route.stations.forEach(station => {
+                    const { x, y } = project(station.lng, station.lat);
+                    
+                    // 站点圆圈
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", x);
+                    circle.setAttribute("cy", y);
+                    circle.setAttribute("r", "4");
+                    circle.setAttribute("fill", "#333");
+                    circle.setAttribute("class", "station");
+                    circle.setAttribute("data-name", station.name);
+                    circle.setAttribute("data-route", route.name);
+                    svg.appendChild(circle);
+                    
+                    // 站点名称
+                    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    text.setAttribute("x", x + 8);
+                    text.setAttribute("y", y - 5);
+                    text.setAttribute("class", "station-text");
+                    text.textContent = station.name;
+                    svg.appendChild(text);
+                });
+            });
+        }
+
+        // 初始化地图
+        drawMap();
+
+        // --- 交互功能 ---
+        // 点击站点显示信息
+        svg.addEventListener("click", (e) => {
+            if (e.target.classList.contains("station")) {
+                const stationName = e.target.getAttribute("data-name");
+                const routeName = e.target.getAttribute("data-route");
+                infoPanel.innerHTML = `
+                    <strong>${stationName}</strong><br>
+                    所属线路：${routeName}
+                `;
+                infoPanel.style.display = "block";
+                
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    infoPanel.style.display = "none";
+                }, 3000);
+            }
+        });
+
+        // 拖拽地图
+        svg.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+            svg.style.cursor = "grabbing";
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                panX = e.clientX - startX;
+                panY = e.clientY - startY;
+                drawMap();
+            }
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            svg.style.cursor = "grab";
+        });
+
+        // 缩放地图
+        svg.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1; // 滚轮向下缩小，向上放大
+            scale *= delta;
+            drawMap();
+        });
+    </script>
+</body>
+</html>

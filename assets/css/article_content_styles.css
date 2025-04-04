@@ -1,0 +1,43 @@
+img.align-left {
+    float: left;
+    margin-right: 15px;
+}
+
+img.align-right {
+    float: right;
+    margin-left: 15px;
+}
+
+img.mx-auto.d-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.mce-content-body {
+    font-family: "Microsoft YaHei", "SimSun", "SimHei", "KaiTi", "FangSong", Arial, sans-serif !important;
+}
+
+.tox-notification--in {
+    display: none !important;
+}
+
+.tox-notification {
+    display: none !important;
+}
+
+span.float-left { 
+    /* display: inline-block;  */
+    float: left; 
+    margin-right: 15px; margin-bottom: 10px; 
+}
+
+span.float-right { 
+    /* display: inline-block;  */
+    float: right; 
+    margin-left: 15px; 
+    margin-bottom: 10px; 
+}
+
+
+
