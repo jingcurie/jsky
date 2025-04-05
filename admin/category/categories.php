@@ -1,7 +1,8 @@
 <?php
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require INCLUDE_PATH . '/db.php';
+require INCLUDE_PATH . '/auth.php';
+require INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -28,7 +29,7 @@ $categories = getAll($conn, 'categories');
     <title>分类管理</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -68,10 +69,10 @@ $categories = getAll($conn, 'categories');
     </div>
 
     <!-- 引入通用删除模态框 -->
-    <?php require '../includes/delete_modal.php'; ?>
+    <?php require_once INCLUDE_PATH . '/delete_modal.php'; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= JS_URL ?>/admin.js"></script>
 </body>
 </html>

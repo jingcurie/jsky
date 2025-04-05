@@ -64,3 +64,195 @@ body {
     font-weight: bold;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
+
+/* dashboard style */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.logo-frame {
+    height: 60px;
+    background-color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    position: fixed;
+    width: 100%;
+}
+
+.sidebar {
+    width: 250px;
+    height: calc(100vh - 60px);
+    background-color: #343a40;
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 60px;
+    padding-top: 10px;
+    transition: width 0.3s;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    cursor: pointer;
+}
+
+.sidebar .menu li {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+    position: relative;
+}
+
+.sidebar .menu li i {
+    width: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.sidebar .menu li span {
+    flex-grow: 1;
+    transition: opacity 0.3s;
+}
+
+.sidebar.collapsed .menu li {
+    justify-content: center;
+    padding: 12px;
+}
+
+.sidebar.collapsed .menu li span,
+.sidebar.collapsed .toggle-icon {
+    display: none;
+}
+
+.sidebar .menu li:hover {
+    background: #495057;
+}
+
+.sidebar .menu li.active {
+    background: #007bff;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.sidebar.collapsed+.main-content {
+    margin-left: 80px;
+}
+
+iframe {
+    width: 100%;
+    height: calc(100vh - 80px);
+    border: none;
+    border-radius: 8px;
+    margin-top: 5rem;
+}
+
+/* 文章分类子菜单 */
+.category-list {
+    display: none;
+    padding-left: 40px;
+}
+
+.sidebar.collapsed .category-list {
+    display: none !important;
+}
+
+/* 仅在收缩时显示的浮动子菜单 */
+.floating-submenu {
+    display: none;
+    position: absolute;
+    left: 80px;
+    top: 0;
+    background: #343a40;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 1000;
+    white-space: nowrap;
+}
+
+.floating-submenu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.floating-submenu li {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+    color: white;
+}
+
+.floating-submenu li:hover {
+    background: #007bff;
+    color: white;
+}
+
+.welcome-message {
+    /* background: linear-gradient(to right, #4a4e69, #222831); */
+    /* 专业级渐变背景 */
+    color: #f8f9fa;
+    /* 浅色文字，增强对比度 */
+    text-align: center;
+    padding: 15px 20px;
+    border-radius: 8px;
+    /* 轻微圆角，显得现代 */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); */
+    border-bottom: 1px solid #888888;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.welcome-message i {
+    font-size: 40px;
+    /* 用户头像大一点 */
+    color: #ffc107;
+    /* 高亮色，增强视觉吸引力 */
+    margin-bottom: 15px;
+}
+
+#welcome-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+#current-time {
+    font-size: 14px;
+    font-style: italic;
+    opacity: 0.8;
+    /* 让时间部分稍微柔和些，不抢主视觉 */
+}
+
+.quitAdminBtn {
+    position: absolute;
+    bottom: 1rem;
+    left: 1.5rem;
+    width: 100%;
+}
+
+.quitAdminBtn a {
+    color: white;
+    display: inline-block;
+    padding: 5px 10px;
+}

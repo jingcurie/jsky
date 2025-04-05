@@ -1,20 +1,20 @@
 <?php
-
+require '../includes/config.php';
 // 设置页面元数据
-$meta_description = !empty($article['meta_description']) ?
-    $article['meta_description'] :
-    mb_substr(strip_tags($article['content']), 0, 100, 'UTF-8');
+// $meta_description = !empty($article['meta_description']) ?
+//     $article['meta_description'] :
+//     mb_substr(strip_tags($article['content']), 0, 100, 'UTF-8');
 
-$current_page_css = '/assets/css/article.css';
-$extraHead = <<<HTML
-<meta name="description" content="{$article['title']} - {$meta_description}">
-<meta property="og:title" content="{$article['title']}">
-<meta property="og:description" content="{$meta_description}">
-<meta property="og:image" content="{$article['cover_image']}">
-HTML;
+$current_page_css = CSS_URL .'/article.css';
+// $extraHead = <<<HTML
+// <meta name="description" content="{$article['title']} - {$meta_description}">
+// <meta property="og:title" content="{$article['title']}">
+// <meta property="og:description" content="{$meta_description}">
+// <meta property="og:image" content="{$article['cover_image']}">
+// HTML;
 
 // 加载头部
-require 'header.php';
+require '../templates/header.php';
 
 // 获取文章ID
 $article_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -25,11 +25,9 @@ if (!$article_id) {
 
 // 获取文章数据
 $article = query($conn, "SELECT articles.created_at as ct, articles.*, menu.id AS menu_id, menu.* FROM articles LEFT JOIN menu ON articles.category_id = menu.article_category_id WHERE articles.id = ? and articles.status = ?", [$article_id, "published"])[0];
-// $article = getById($conn, "articles", "id", $article_id);
 
 if (!$article) {
     echo "查询错误，请联系管理员";
-    // header("Location: /404.php");
     exit;
 }
 
@@ -39,26 +37,6 @@ $conn->prepare("UPDATE articles SET view_count = view_count + 1 WHERE id = ?")->
 ?>
 
 <main class="article-container">
-    <?php
-    // // 获取当前菜单ID和分类ID
-    // $menu_id = isset($_GET['menu_id']) ? intval($_GET['menu_id']) : 0;
-    // $article_category_id = isset($_GET['article_category_id']) ? intval($_GET['article_category_id']) : 0;
-
-    // // 查询菜单信息
-    // $menu = [];
-
-    // if ($menu_id > 0) {
-    //     $menu = query($conn, "SELECT * FROM menu WHERE id = ?", [$menu_id]);
-    // }
-
-    // // 查询分类信息
-    // $category = [];
-    // if ($article_category_id > 0) {
-    //     $category = query($conn, "SELECT * FROM categories WHERE id = ?", [$article_category_id]);
-    // }
-    //$stmt = query($conn, "SELECT articles.*, menu.* FROM articles LEFT JOIN menu ON articles.category_id = menu.article_category_id WHERE articles.id = 6?", [$article_id])[0];
-    ?>
-
     <div class="breadcrumb">
         <!-- 首页链接 -->
         <a href="/">首页</a>
@@ -66,7 +44,7 @@ $conn->prepare("UPDATE articles SET view_count = view_count + 1 WHERE id = ?")->
 
         <!-- 一级菜单 -->
    
-            <a href="/showSubMenuPage.php?article_category_id=<?= $article["category_id"] ?>&menu_id=<?= $article["menu_id"] ?>">
+            <a href="/pages/showSubMenuPage.php?article_category_id=<?= $article["category_id"] ?>&menu_id=<?= $article["menu_id"] ?>">
             <?= htmlspecialchars($article['name']) ?>
             </a>
             <i class="fas fa-chevron-right"></i>
@@ -150,26 +128,5 @@ $conn->prepare("UPDATE articles SET view_count = view_count + 1 WHERE id = ?")->
 
 <?php
 // 加载页脚
-require 'footer.php';
+require '../templates/footer.php';
 ?>
-
-<script>
-    $(document).ready(function() {
-        // 图片灯箱效果
-        $('.article-body img').click(function() {
-            const src = $(this).attr('src');
-            window.open(src, '_blank');
-        });
-
-        // 平滑滚动
-        $('a[href^="#"]').on('click', function(e) {
-            e.preventDefault();
-            const target = $($(this).attr('href'));
-            if (target.length) {
-                $('html, body').animate({
-                    scrollTop: target.offset().top - 20
-                }, 500);
-            }
-        });
-    });
-</script>

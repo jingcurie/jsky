@@ -1,10 +1,13 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
-require 'includes/db.php';
-require 'includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $settings = getSettings($conn);
-
 // 获取菜单数据
 $menus = getMenus($conn);
 
@@ -36,14 +39,14 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
             }
 
             // 如果 URL 是 showSubMenuPage.php，需要根据 menu_type 追加参数
-            if ($menu['url'] === 'showSubMenuPage.php') {
+            if ($menu['url'] === '/pages/showSubMenuPage.php') {
                 if (!empty($menu['article_category_id'])) {
-                    $url = $menu['url'] . "?article_category_id=" . urlencode($menu['article_category_id']) . "&menu_id=" . urlencode($menu_id);
+                    $url =  $menu['url'] . "?article_category_id=" . urlencode($menu['article_category_id']) . "&menu_id=" . urlencode($menu_id);
                 } else {
-                    $url = $menu['url'] . "?menu_id=" . urlencode($menu_id);
+                    $url =  $menu['url'] . "?menu_id=" . urlencode($menu_id);
                 }
             } else {
-                $url = $menu['url']; // 其他情况保持原样
+                $url =  $menu['url']; // 其他情况保持原样
             }
         } else {
             $url = "#"; // 默认值
@@ -72,15 +75,15 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
     <meta name="keywords" content="<?= htmlspecialchars($settings['meta_keywords']) ?>">
     <meta name="description" content="<?=htmlspecialchars($settings['meta_description']);?>">
     <title><?=htmlspecialchars($settings['site_title']);?></title>
-    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
-    <link href="/assets/css/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="icon" type="image/png" href="<?= IMG_URL ?>/favicon.png">
+    <link href="<?= CSS_URL ?>/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= CSS_URL ?>/main.css">
     <?php if (isset($current_page_css)) : ?>
         <link rel="stylesheet" href="<?php echo $current_page_css; ?>"> <!-- 动态加载特定页面的 CSS -->
     <?php endif; ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/assets/js/aos.js"></script>
+    <script src="<?= JS_URL ?>/aos.js"></script>
     <!-- 当前页面的额外 CSS 和 JS -->
     <?php echo $extraHead ?? ''; ?>
 </head>
@@ -89,7 +92,7 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1><a href="/" onclick="handleLogoClick(event)"><img src="/assets/images/jinshan_logo.png" alt="公司logo"></a></h1>
+                <h1><a href="/" onclick="handleLogoClick(event)"><img src="<?= IMG_URL ?>/jinshan_logo.png" alt="公司logo"></a></h1>
             </div>
 
             <script>

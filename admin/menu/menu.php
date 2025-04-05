@@ -1,6 +1,12 @@
 <?php
-require_once '../includes/db.php';
-require_once '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require INCLUDE_PATH . '/db.php';
+require INCLUDE_PATH . '/auth.php';
+require INCLUDE_PATH . '/functions.php';
+
+if (!isLoggedIn()) {
+    redirect('login.php');
+}
 
 header("Content-Type: application/json");
 
@@ -38,7 +44,7 @@ if ($_GET['action'] === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     if ($data['menu_type'] === 'article') {
-        $data['url'] = 'showSubMenuPage.php';
+        $data['url'] = '/pages/showSubMenuPage.php';
     }
 
     if ($id) {

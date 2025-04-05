@@ -1,6 +1,8 @@
 <?php
-$current_page_css = "/assets/css/subMenuPage.css"; // 该页面独有的 CSS
-include 'header.php';
+require_once __DIR__ . "/../includes/config.php";
+$current_page_css = CSS_URL . "/subMenuPage.css"; // 该页面独有的 CSS
+require_once __DIR__ . '/../templates/header.php';
+ 
 
 $menu_id = $_GET['menu_id'] ?? null;
 $article_category_id = $_GET['article_category_id'] ?? null;
@@ -58,14 +60,14 @@ if ($article_category_id) {
                     <?php foreach ($articles as $article): ?>
                         <article class="card" data-aos="fade-up">
                             <div>
-                                <a href="client_view_article.php?id=<?= $article['id']; ?>"> <img src="/assets/images/uploads/<?= htmlspecialchars($article['cover_image']) ?: 'assets/images/default_article_image.jpg'; ?>" alt="公告图片"></a>
+                                <a href="client_view_article.php?id=<?= $article['id']; ?>"> <img src="<?= ARTICLE_URL ?><?= htmlspecialchars($article['cover_image']) ?: 'assets/images/default_article_image.jpg'; ?>" alt="<?= $article['title']; ?> 封面图片"></a>
                                 <p class="summary">
                                     <?php
                                     // 尝试提取第一段文本作为摘要
                                     //preg_match('/<p>(.*?)<\/p>/', htmlspecialchars_decode($article['content']), $matches);
                                     // preg_match('/<p[^>]*>(.*?)<\/p>/s', htmlspecialchars_decode($article['content']), $matches);
 
-                                    $summary = getSummary($matches[1], htmlspecialchars_decode($article['content']));
+                                    $summary = getSummary(htmlspecialchars_decode($article['content']));
                                     echo isset($summary) ? $summary : '暂无摘要...';
                                     ?>
                                 </p>
@@ -99,4 +101,4 @@ if ($article_category_id) {
 
     AOS.init({ duration: 1000 });
   </script>
-<?php include "footer.php"; ?>
+<?php include "../templates/footer.php"; ?>

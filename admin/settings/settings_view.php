@@ -7,7 +7,7 @@
     <title>站点设置</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
     <style>
         .tab-content {
             padding: 20px;
@@ -103,7 +103,7 @@
                         <!-- 当前LOGO预览 -->
                         <?php if (!empty($settings['site_logo'])): ?>
                             <div class="mt-2">
-                                <img src="/assets/images/uploads/<?= htmlspecialchars($settings['site_logo']) ?>"
+                                <img src="<?= UPLOAD_URL ?>/<?= htmlspecialchars($settings['site_logo']) ?>"
                                     class="img-thumbnail" style="max-height: 100px;">
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="checkbox"
@@ -133,7 +133,7 @@
                                         <i class="fas fa-trash">删除</i>
                                     </button>
                                 </div>
-                                <img src="/assets/images/uploads/banners/<?php echo htmlspecialchars($banner['image_path']); ?>" style="max-width: 100%; max-height: 150px;">
+                                <img src="<?= BANNER_URL ?>/<?php echo htmlspecialchars($banner['image_path']); ?>" style="max-width: 100%; max-height: 150px;">
                                 <div class="mt-2">
                                     <strong>描述:</strong> <?php echo htmlspecialchars($banner['description']); ?>
                                 </div>
@@ -224,11 +224,11 @@
     </div>
 
     <!-- 引入通用删除模态框 -->
-    <?php require '../includes/delete_modal.php'; ?>
+    <?php require INCLUDE_PATH . '/delete_modal.php'; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= JS_URL ?>/admin.js"></script>
 
     <script>
         // 根据哈希值激活对应标签页

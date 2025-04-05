@@ -83,7 +83,7 @@ function redirect($url)
 }
 
 //摘取摘要
-function getSummary($matches, $content)
+function getSummary($content)
 {
     $content = htmlspecialchars_decode($content);
 

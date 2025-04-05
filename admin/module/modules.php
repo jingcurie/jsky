@@ -1,8 +1,8 @@
 <?php
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
-
+require_once __DIR__ . '/../../includes/config.php';
+require INCLUDE_PATH . '/db.php';
+require INCLUDE_PATH . '/auth.php';
+require INCLUDE_PATH . '/functions.php';
 if (!isLoggedIn()) {
     redirect('login.php');
 }
@@ -22,13 +22,15 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
 
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
         <h2><i class="fas fa-cubes"></i> 模块管理</h2>
@@ -55,14 +57,17 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
                 <?php foreach ($modules as $module): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($module['module_id']); ?></td>
-                        <td class="module-icon"><i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i></td>
+                        <td class="module-icon"><i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i>
+                        </td>
                         <td><?php echo htmlspecialchars($module['module_name']); ?></td>
                         <td><?php echo htmlspecialchars($module['description']); ?></td>
                         <td><?php echo htmlspecialchars($module['module_url']); ?></td>
                         <td><?php echo htmlspecialchars($module['module_order']); ?></td>
                         <td>
-                            <a href="module_form.php?module_id=<?php echo $module['module_id']; ?>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
-                            <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($module['module_name']); ?>', 'modules.php?delete_id=<?= $module['module_id'] ?>')">
+                            <a href="module_form.php?module_id=<?php echo $module['module_id']; ?>"
+                                class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
+                            <button class="btn btn-delete btn-sm"
+                                onclick="openDeleteModal('<?php echo htmlspecialchars($module['module_name']); ?>', 'modules.php?delete_id=<?= $module['module_id'] ?>')">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
                         </td>
@@ -73,10 +78,12 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
     </div>
 
     <!-- 引入通用删除模态框 -->
-    <?php require '../includes/delete_modal.php'; ?>
+    <?php require_once INCLUDE_PATH . '/delete_modal.php'; ?>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/admin.js"></script>
+    <script src="<?= JS_URL ?>/admin.js"></script>
+
 </body>
+
 </html>

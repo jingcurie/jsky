@@ -42,7 +42,7 @@
     // 传递Banner数据给JavaScript
     const bannerData = <?= json_encode(array_map(function($banner) {
         return [
-            'image' => '/assets/images/uploads/banners/' . $banner['image_path'],
+            'image' => '/uploads/banners/' . $banner['image_path'],
             'title' => $banner['title'],
             'desc' => $banner['description'],
             // 'url' => $banner['url'] ?? '#',

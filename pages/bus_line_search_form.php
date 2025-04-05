@@ -1,6 +1,7 @@
 <?php
-$current_page_css = "/assets/css/line_search_style.css"; // 该页面独有的 CSS
-include 'header.php';
+require_once '../includes/config.php';
+$current_page_css = CSS_URL . '/line_search_style.css'; // 该页面独有的 CSS
+include '../templates/header.php';
 ?>
 
 <main class="article-main">
@@ -42,7 +43,7 @@ include 'header.php';
   
 
   <div class="article-container">
-    <div class="featureImageSection"><img src="/assets/images/bus_route_search.jpg" alt="公交线路查询图" width="100%" style="border-radius:10px;"></div>
+    <div class="featureImageSection"><img src="<?= IMG_URL ?>/bus_route_search.jpg" alt="公交线路查询图" width="100%" style="border-radius:10px;"></div>
     <section class="route-search">
       <h2>公交线路查询</h2>
 
@@ -127,7 +128,7 @@ include 'header.php';
 
       // 获取线路
       $.ajax({
-        url: "busRouteSearch/bus_line_search.php?action=getLines",
+        url: "../busRouteSearch/bus_line_search.php?action=getLines",
         method: "GET",
         dataType: "json",
         success: function(data) {
@@ -162,7 +163,7 @@ include 'header.php';
         let directionText = direction === "up" ? "上行" : "下行";
         $("#lineTitle").text(`${line} (${directionText}) 线路图`);
 
-        $.post("busRouteSearch/bus_line_search.php", {
+        $.post("../busRouteSearch/bus_line_search.php", {
             action: "getStations",
             line: line,
             direction: direction,
@@ -265,4 +266,4 @@ include 'header.php';
 
 
 
-<?php include "footer.php" ?>
+<?php include "../templates/footer.php" ?>
