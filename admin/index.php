@@ -61,7 +61,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div> -->
         <div class="hamburger">
-            <img src="/assets/images/jinshan_logo2.png" alt="Logo" class="logo"> <!-- 👈 换成你的 logo 路径 -->
+            <a href="/admin"><img src="/assets/images/jinshan_logo2.png" alt="Logo" class="logo"></a> <!-- 👈 换成你的 logo 路径 -->
             <div class="toggle-btn" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </div>

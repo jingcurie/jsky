@@ -1,5 +1,12 @@
 <?php
 $banners = query($conn, "SELECT * FROM site_banners");
+
+$device_type = (preg_match('/mobile|android|iphone|ipad/i', $_SERVER['HTTP_USER_AGENT'])) ? 'Mobile' : 'Desktop';
+$ip = $_SERVER['REMOTE_ADDR'];
+$user_agent = $_SERVER['HTTP_USER_AGENT'];
+
+$stmt = $conn->prepare("INSERT INTO visit_logs (device_type, ip_address, user_agent) VALUES (?, ?, ?)");
+$stmt->execute([$device_type, $ip, $user_agent]);
 ?>
 
 <main>
