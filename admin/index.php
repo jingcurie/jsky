@@ -6,10 +6,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once '../includes/config.php';
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -41,6 +41,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
@@ -52,46 +53,57 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="sidebar" id="sidebar">
-        <div class="top-bar">
+        <!-- <div class="top-bar">
             <div class="welcome-message">
                 <i class="fas fa-user-circle"></i>
                 <span id="welcome-text">欢迎回来，<?= htmlspecialchars($_SESSION['username']) ?></span>
                 <span id="current-time"></span>
+            </div>
+        </div> -->
+        <div class="welcome-message">
+            <div class="avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="welcome-text">
+                <div id="welcome-text">欢迎您，Admin</div>
+                <div id="current-time">2025-04-05</div>
             </div>
         </div>
 
         <div class="toggle-btn" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </div>
-        <ul class="menu list-unstyled">
-            <?php foreach ($modules as $module): ?>
-                <li
-                    <?php if ($module['module_name'] === '文章管理'): ?>
-                    onmouseover="showFloatingMenu(event)"
-                    onmouseleave="hideFloatingMenu()"
-                    onclick="toggleCategoryList();"
-                    <?php else: ?>
-                    onclick="loadPage('<?php echo htmlspecialchars($module['module_url']); ?>', this);"
-                    <?php endif; ?>>
-                    <i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i>
-                    <span><?php echo htmlspecialchars($module['module_name']); ?></span>
-                    <?php if ($module['module_name'] === '文章管理'): ?>
-                        <i class="fas fa-chevron-down ms-auto toggle-icon"></i>
-                    <?php endif; ?>
-                </li>
-                <?php if ($module['module_name'] === '文章管理'): ?>
-                    <ul class="category-list list-unstyled" id="categoryList">
-                        <?php foreach ($categories as $category): ?>
-                            <li onclick="loadPage('articles.php?category_id=<?= htmlspecialchars($category['id']) ?>', this);">
-                                <i class="fas fa-folder"></i> <?= htmlspecialchars($category['name']) ?>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </ul>
 
-        <div class="quitAdminBtn"><img src="../assets/images/favicon.png" alt="" width="32"> <a href="logout.php"> 退出系统 </a></div>
+        <div class="menu-scroll">
+            <ul class="menu list-unstyled">
+                <?php foreach ($modules as $module): ?>
+                    <li <?php if ($module['module_name'] === '文章管理'): ?> onmouseover="showFloatingMenu(event)"
+                            onmouseleave="hideFloatingMenu()" onclick="toggleCategoryList();" <?php else: ?>
+                            onclick="loadPage('<?php echo htmlspecialchars($module['module_url']); ?>', this);" <?php endif; ?>>
+                        <i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i>
+                        <span><?php echo htmlspecialchars($module['module_name']); ?></span>
+                        <?php if ($module['module_name'] === '文章管理'): ?>
+                            <i class="fas fa-chevron-down ms-auto toggle-icon"></i>
+                        <?php endif; ?>
+                    </li>
+                    <?php if ($module['module_name'] === '文章管理'): ?>
+                        <ul class="category-list list-unstyled" id="categoryList">
+                            <?php foreach ($categories as $category): ?>
+                                <li
+                                    onclick="loadPage('article/articles.php?category_id=<?= htmlspecialchars($category['id']) ?>', this);">
+                                    <i class="fas fa-folder"></i> <?= htmlspecialchars($category['name']) ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <li><a href="logout.php" style="text-decoration:none;"><i
+                            class="fas fa-right-from-bracket"></i><span>退出系统</span>
+                    </a></li>
+            </ul>
+        </div>
+
+
     </div>
 
     <div class="main-content">
@@ -101,7 +113,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="floating-submenu" id="floatingSubmenu">
         <ul>
             <?php foreach ($categories as $category): ?>
-                <li onclick="loadPage('articles.php?category_id=<?= htmlspecialchars($category['id']) ?>');">
+                <li onclick="loadPage('article/articles.php?category_id=<?= htmlspecialchars($category['id']) ?>');">
                     <?= htmlspecialchars($category['name']) ?>
                 </li>
             <?php endforeach; ?>
@@ -115,13 +127,30 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         //     element.classList.add('active');
         // }
 
+        // function loadPage(page, element) {
+        //     let iframe = document.getElementById('mainFrame');
+        //     iframe.src = page + '?t=' + new Date().getTime(); // 添加时间戳，防止缓存
+
+        //     // 高亮当前选中的菜单项
+        //     document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
+        //     element.classList.add('active');
+        // }
+
         function loadPage(page, element) {
             let iframe = document.getElementById('mainFrame');
-            iframe.src = page + '?t=' + new Date().getTime(); // 添加时间戳，防止缓存
+            iframe.src = page + '?t=' + new Date().getTime(); // 防缓存
 
-            // 高亮当前选中的菜单项
+            // 高亮主菜单项
             document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
+            if (element) {
+                element.classList.add('active');
+            }
+
+            // 👉 收缩状态下点击浮动菜单后隐藏它
+            let sidebar = document.getElementById("sidebar");
+            if (sidebar.classList.contains("collapsed")) {
+                document.getElementById("floatingSubmenu").style.display = "none";
+            }
         }
 
         // function loadPage(page, element) {
@@ -140,6 +169,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
+            //let welcomeMessage = document.querySelector(".welcome-message");
             sidebar.classList.toggle('collapsed');
         }
 

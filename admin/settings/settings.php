@@ -12,15 +12,41 @@ if (!isLoggedIn()) {
 $success = '';
 $error = '';
 
-echo $_GET['delete_id'];
-// 删除分类
+
 if (isset($_GET['delete_id'])) {
-    if (delete($conn, 'site_banners', 'id', $_GET['delete_id'])) {
+    $bannerId = $_GET['delete_id'];
+
+    // 获取 Banner 记录（假设你有获取数据的函数）
+    $banner = getById($conn,"site_banners", "id", $bannerId); // 这是你查询数据库的函数
+
+    if ($banner) {
+        $imagePath = $banner['image_path']; // 获取图片路径
+
+        // 删除图片文件
+        $imageFilePath = BANNER_PATH . $imagePath;
+        if (file_exists($imageFilePath)) {
+            unlink($imageFilePath); // 删除物理文件
+        }
+
+        // 删除数据库中的记录
+        delete($conn, 'site_banners', 'id', $_GET['delete_id']); 
         redirect('settings.php#home');
+
+        $success = "Banner 和图片已删除成功！";
     } else {
-        $error = "Error deleting category.";
+        $error = "找不到要删除的 Banner！";
     }
 }
+
+// echo $_GET['delete_id'];
+// // 删除分类
+// if (isset($_GET['delete_id'])) {
+//     if (delete($conn, 'site_banners', 'id', $_GET['delete_id'])) {
+//         redirect('settings.php#home');
+//     } else {
+//         $error = "Error deleting category.";
+//     }
+// }
 
 // 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

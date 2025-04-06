@@ -1,12 +1,13 @@
 <?php
 // 错误报告设置（开发环境）
-error_reporting(E_ALL);          // 报告所有PHP错误
-ini_set('display_errors', 1);    // 在页面上显示错误
-ini_set('display_startup_errors', 1); // 显示启动错误
+// error_reporting(E_ALL);          // 报告所有PHP错误
+// ini_set('display_errors', 1);    // 在页面上显示错误
+// ini_set('display_startup_errors', 1); // 显示启动错误
 
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require INCLUDE_PATH . '/db.php';
+require INCLUDE_PATH . '/auth.php';
+require INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -66,17 +67,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 生成唯一文件名
             $extension = pathinfo($_FILES['banner_image']['name'], PATHINFO_EXTENSION);
             $filename = 'banner_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
-            $uploadPath = '../assets/images/uploads/banners/' . $filename;
+            $uploadPath = __DIR__ . "/../.." .BANNER_URL . $filename;
             
             // 确保上传目录存在
-            if (!is_dir('../assets/images/uploads/banners')) {
-                mkdir('../assets/images/uploads/banners', 0755, true);
+            if (!is_dir(BANNER_URL)) {
+                mkdir(BANNER_URL, 0755, true);
             }
             
             if (move_uploaded_file($_FILES['banner_image']['tmp_name'], $uploadPath)) {
                 // 如果是编辑模式，删除旧图片
-                if ($is_edit && !empty($banner['image_path']) && file_exists('../assets/images/uploads/banners/' . $banner['image_path'])) {
-                    unlink('../assets/images/uploads/banners/' . $banner['image_path']);
+                if ($is_edit && !empty($banner['image_path']) && file_exists(BANNER_URL . '/' . $banner['image_path'])) {
+                    unlink(BANNER_URL . '/' . $banner['image_path']);
                 }
                 $data['image_path'] = $filename;
             } else {
@@ -131,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?php echo $is_edit ? '编辑' : '添加'; ?>Banner</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
@@ -152,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="mb-3">
                     <label class="form-label">当前图片</label>
                     <div>
-                        <img src="/assets/images/uploads/banners/<?php echo htmlspecialchars($banner['image_path']); ?>" style="max-width: 100%; max-height: 200px;">
+                        <img src="<?= BANNER_URL ?>/<?php echo htmlspecialchars($banner['image_path']); ?>" style="max-width: 100%; max-height: 200px;">
                     </div>
                 </div>
             <?php endif; ?>

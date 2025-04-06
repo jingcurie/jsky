@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../../includes/config.php';
-require INCLUDE_PATH . '/db.php';
-require INCLUDE_PATH . '/auth.php';
-require INCLUDE_PATH . '/functions.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');

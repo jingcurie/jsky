@@ -1,10 +1,11 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 $article_id = isset($_POST['id'])?$_POST['id']:"";
 
@@ -14,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = $_POST['content'];
     $author = trim($_POST['author']);
     $created_at= trim($_POST['created_at']);
-    $cover_image = trim($_POST['cover_image'] ?? 'assets/images/uploads/default_cover_image.jpg');  // 默认封面
+    $cover_image = trim($_POST['cover_image'] ?? IMG_URL . '/default_cover_image.jpg');  // 默认封面
     $status = trim($_POST['status']);
 
     if (empty($title) || empty($content) || empty($author)) {

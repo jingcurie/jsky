@@ -2,9 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -44,6 +45,7 @@ if ($article_id > 0) {
         $cover_image = $article['cover_image'];
         $status = $article['status'] ?? 'draft'; // 新增状态字段
     }
+
 }
 ?>
 
@@ -60,13 +62,13 @@ if ($article_id > 0) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- TinyMCE -->
-    <script src="../assets/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="<?= JS_URL ?>/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
         tinymce.init({
             license_key: 'gpl',
             selector: '#content',
             language: 'zh_CN',
-            language_url: '../assets/js/tinymce/langs/zh_CN.js',
+            language_url: '<?= JS_URL ?>/tinymce/langs/zh_CN.js',
 
             setup: (editor) => {
                 // 定义多个模板
@@ -101,7 +103,6 @@ if ($article_id > 0) {
                 editor.on('NodeChange', function(e) {
                     var img = editor.selection.getNode();
                     if (img.nodeName === 'IMG' && img.style.float === 'left') {
-                        console.log("sfsdfsdfdsf");
                         img.style.marginRight = '15px'; // ✅ 自动添加右边距
                         img.style.marginBottom = '10px'; // ✅ 也可以加一点底部间距
                     }
@@ -280,7 +281,7 @@ if ($article_id > 0) {
                 };
                 input.click();
             },
-            content_css: "../assets/css/article_content_styles.css",
+            content_css: "<?= CSS_URL ?>/article_content_styles.css",
             image_class_list: [{
                     title: '无浮动',
                     value: ''
@@ -303,7 +304,7 @@ if ($article_id > 0) {
 
 
 
-    <script src="/assets/js/upload.js"></script>
+    <script src="<?= JS_URL ?>/upload.js"></script>
 </head>
 
 <body class="bg-light">
@@ -334,7 +335,7 @@ if ($article_id > 0) {
                             <p>拖放图片到此处或点击选择文件</p>
                             <input type="file" id="cover_image_input" class="form-control" accept="image/jpeg, image/png">
                             <progress id="uploadProgress" value="0" max="100" style="width: 100%; display: none;"></progress>
-                            <img id="cover_preview" src="<?= $cover_image ? "/assets/images/uploads/" . htmlspecialchars($cover_image) : "/assets/images/uploads/default_cover_image.jpg" ?>"
+                            <img id="cover_preview" src="<?php echo $cover_image ? ARTICLE_URL . htmlspecialchars($cover_image) : IMG_URL . "/default_cover_image.jpg" ?>"
                                 class="img-thumbnail mt-2" style="max-width: 200px; display: <?= $cover_image ? 'block' : 'none' ?>;">
                         </div>
                         <input type="hidden" name="cover_image" id="cover_image" value="<?= htmlspecialchars($cover_image) ?>">

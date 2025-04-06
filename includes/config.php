@@ -2,10 +2,12 @@
 //路径与 URL 设置
 define('INCLUDE_PATH', __DIR__); //获得一个父亲路径
 
+//物理PATH
 define('UPLOAD_PATH', __DIR__ . '/../uploads');
 define('BANNER_PATH', UPLOAD_PATH . '/banners/');
 define('ARTICLE_PATH', UPLOAD_PATH . '/articles/');
 
+//相对URL
 define('UPLOAD_URL','/uploads');
 define('BANNER_URL', UPLOAD_URL . '/banners/');
 define('ARTICLE_URL', UPLOAD_URL . '/articles/');

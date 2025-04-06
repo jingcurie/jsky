@@ -1,7 +1,14 @@
 
 
 <?php
-require '../includes/db.php'; // 数据库连接
+require_once __DIR__ . '/../../includes/config.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
+ 
+if (!isLoggedIn()) {
+    redirect('login.php');
+}
 
 $upload_dir = '../assets/images/uploads/'; // 目标存储目录
 

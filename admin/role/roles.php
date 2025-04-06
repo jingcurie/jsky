@@ -59,7 +59,7 @@ $roles = getAll($conn, 'roles');
                         <td><?php echo htmlspecialchars($role['role_desc']); ?></td>
                         <td>
                             <a href="role_form.php?role_id=<?php echo $role['role_id']; ?>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
-                            <a href="role_modules.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-warning">
+                            <a href="role_modules.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-task">
                                 <i class="fas fa-tasks"></i> 分配模块
                             </a>
                             <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($role['role_name']); ?>', 'roles.php?delete_id=<?= $role['role_id'] ?>')">

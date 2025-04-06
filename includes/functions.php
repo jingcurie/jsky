@@ -110,6 +110,7 @@ function getSummary($content)
     return implode(" ", $texts);
 }
 
+//获得所有settings表的数据，不能用getById function
 function getSettings($conn) {
     $rows = query($conn, "SELECT * FROM site_settings");
     $settings = [];
@@ -117,4 +118,95 @@ function getSettings($conn) {
         $settings[$row['setting_key']] = $row['setting_value'];
     }
     return $settings;
+}
+
+//以下是删除coverimage和richtext中图片当我们删除文章时
+function deleteArticleWithImages($conn, $articleId) {
+    $article = getById($conn, 'articles', 'id', $articleId);
+    if (!$article) {
+        error_log("Article not found: " . $articleId);
+        return false;
+    }
+    
+    // 删除封面图片（使用你的ARTICLE_PATH常量）
+    if (!empty($article['cover_image'])) {
+        $coverPath = ARTICLE_PATH . $article['cover_image'];
+        if (file_exists($coverPath) && isSafeToDelete($coverPath)) {
+            if (!@unlink($coverPath)) {
+                error_log("Failed to delete cover image: " . $coverPath);
+            }
+        }
+    }
+    
+    // 删除富文本图片
+    if (!empty($article['content'])) {
+        // 在解析富文本图片前添加
+        $decodedContent = htmlspecialchars_decode($article['content']);
+        $pattern = '/<img\s+[^>]*src\s*=\s*(["\']?)(?!data:)([^"\'>\s]+)\1/i';
+        preg_match_all($pattern, $decodedContent, $matches);
+
+        if (!empty($matches[2])) {
+            foreach ($matches[2] as $imgSrc) {
+                $imgPath = resolveImagePath($imgSrc);
+                
+                if ($imgPath && file_exists($imgPath)) {
+                    if (isSafeToDelete($imgPath)) {
+                        if (!@unlink($imgPath)) {
+                            error_log("Failed to delete content image: " . $imgPath);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return delete($conn, 'articles', 'id', $articleId);
+}
+
+function resolveImagePath($imgSrc) {
+    // 移除URL参数和锚点
+    $imgSrc = strtok($imgSrc, '?#');
+    
+    // 处理相对路径 (如../../uploads/articles/)
+    if (strpos($imgSrc, '../') === 0) {
+        $baseDir = dirname(dirname(ARTICLE_PATH)); // 上两级目录
+        $relativePath = substr($imgSrc, strpos($imgSrc, 'uploads/'));
+        return $baseDir . '/' . $relativePath;
+    }
+    
+    // 处理绝对路径 (如/uploads/articles/)
+    if (strpos($imgSrc, '/uploads/') === 0) {
+        return realpath(__DIR__ . '/..' . $imgSrc); // 转到项目根目录
+    }
+    
+    // 处理完整URL (如http://yoursite.com/uploads/articles/)
+    if (strpos($imgSrc, 'http') === 0) {
+        $parsed = parse_url($imgSrc);
+        if (strpos($parsed['path'], '/uploads/') !== false) {
+            return realpath(__DIR__ . '/..' . $parsed['path']);
+        }
+        return false;
+    }
+    
+    // 默认情况（直接位于articles目录下）
+    return ARTICLE_PATH . ltrim($imgSrc, './');
+}
+
+function isSafeToDelete($path) {
+    $allowedPaths = [
+        realpath(ARTICLE_PATH),
+        realpath(dirname(dirname(ARTICLE_PATH)) . '/uploads/articles') // 处理../情况
+    ];
+    
+    $realPath = realpath($path);
+    if ($realPath === false) return false;
+    
+    foreach ($allowedPaths as $allowed) {
+        if (strpos($realPath, $allowed) === 0) {
+            return true;
+        }
+    }
+    
+    error_log("Unsafe deletion attempt: " . $path);
+    return false;
 }

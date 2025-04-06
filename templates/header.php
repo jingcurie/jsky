@@ -4,8 +4,12 @@ error_reporting(E_ALL);
 
 session_start();
 require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/functions.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
+// require_once __DIR__ . '/../includes/config.php';
+// require_once __DIR__ . '/../includes/db.php';
+// require_once __DIR__ . '/../includes/functions.php';
 
 $settings = getSettings($conn);
 // 获取菜单数据

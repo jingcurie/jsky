@@ -1,38 +1,137 @@
 body {
-    background-color: #f8f9fa;
+    background-color: #fbf9f9;
 }
 
-.container {
+.container, .container-fluid {
     margin-top: 30px;
     background: #fff;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+    border-top:10px solid #162b41;
 }
 
+.container h2, .container-fluid h2{
+    font-size:20pt;
+    margin:1rem 0 2rem 0;
+    border-bottom:1px solid #e1e0e0;
+    padding-bottom:8px;
+}
+
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+/* 表头样式 */
 .table th {
-    background-color: #007bff;
+    background-color: #233e57;
     color: white;
+    font-weight: 600;
+    text-align: left;
 }
 
-.btn {
-    border-radius: 5px;
+/* 去除竖线：只保留行与行之间的横线 */
+.table td:not(:last-child),
+.table th:not(:last-child) {
+    border-right: none !important;
+}
+
+.table td, .table th {
+    padding: 10px 18px;
+    vertical-align: middle;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* 悬停高亮行 */
+.table tbody tr:hover {
+    background-color: #f9fcff;
+}
+
+/* 第一列加深字体 */
+.table td:first-child {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+/* 可选：最后一列靠右对齐（适合放按钮） */
+.table td:last-child, table th:last-child {
+    white-space: nowrap;
+    width: 1%;
+    text-align:center
+}
+
+/* 操作按钮推荐微调 */
+.table .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-left: 6px;
+    transition: all 0.3s ease;
+}
+
+.table .btn:hover {
+    border-radius: 40px;
+    color:white;
 }
 
 .btn-edit {
-    background-color: #ffc107;
-    color: white;
+    /* background-color: #f0ad4e; */
+    border:1px solid #bbb9b9;
+    color: #000;
+}
+
+.btn-edit:hover {
+    background-color: #ec971f;
 }
 
 .btn-delete {
-    background-color: #dc3545;
-    color: white;
+    /* background-color: #e74c3c; */
+    border:1px solid #bbb9b9;
+    color: #000;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
 }
 
 .btn-create {
     background-color: #28a745;
     color: white;
-    margin-bottom: 10px;
+    margin-bottom: 0px;
+}
+
+.btn-create:hover {
+    background-color: #157347;
+}
+
+.btn-task{
+    border:1px solid #bbb9b9;
+    color: #000;
+}
+
+.btn-task:hover{
+    background-color: #077394;
+}
+
+.btn-view{
+    border:1px solid #bbb9b9;
+    color: #000;
+}
+
+.btn-view:hover{
+    background-color: #099893;
 }
 
 .modal-header {
@@ -53,16 +152,19 @@ body {
 }
 
 /* 状态徽章样式 */
-.badge-status {
-    min-width: 80px;
-    padding: 5px 10px;
-    font-size: 0.85em;
+.badge {
+    width: 30px;
+    height: 30px;
+    /* padding: 10px; */
+    font-size: 0.82rem;
+    text-align:center;
 }
 
 /* 筛选按钮激活状态 */
 .btn-group .btn.active {
     font-weight: bold;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    
 }
 
 /* dashboard style */
@@ -74,7 +176,7 @@ body {
 
 .logo-frame {
     height: 60px;
-    background-color: #222;
+    background-color:#044b92;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -83,18 +185,76 @@ body {
     font-weight: bold;
     position: fixed;
     width: 100%;
+    border-bottom-right-radius: 30px;
 }
 
 .sidebar {
     width: 250px;
-    height: calc(100vh - 60px);
-    background-color: #343a40;
+    height: 100vh;
+    background-color: #242d32;
     color: white;
     position: fixed;
     left: 0;
-    top: 60px;
+    top: 0px;
     padding-top: 10px;
-    transition: width 0.3s;
+    display: flex;
+    flex-direction: column;
+    border-bottom-right-radius: 30px;
+}
+
+/* 固定 welcome-message 高度即可 */
+.welcome-message {
+    text-align: center;
+    padding: 15px 20px;
+    /* border-bottom: 1px solid #888; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #044b92;;
+}
+
+/* 保持头像显示 */
+.welcome-message .avatar i {
+    font-size: 40px;
+    color: #ffc107;
+    margin-bottom: 10px;
+}
+
+/* 默认文字样式 */
+.welcome-message .welcome-text {
+    text-align: center;
+}
+
+/* 收缩时隐藏文字但保留头像 */
+/* .sidebar.collapsed .welcome-text {
+    display: none;
+} */
+
+/* 保证收缩后头像仍居中 */
+.sidebar.collapsed .welcome-message {
+    padding: 10px 0;
+}
+
+.welcome-message .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+} 
+
+/* 菜单部分滚动 */
+.menu-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-grow: 1;
+}
+
+/* 滚动条美化（可选） */
+.menu-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.menu-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
 }
 
 .sidebar.collapsed {
@@ -116,6 +276,9 @@ body {
     cursor: pointer;
     transition: background 0.3s;
     position: relative;
+
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
 }
 
 .sidebar .menu li i {
@@ -141,10 +304,18 @@ body {
 
 .sidebar .menu li:hover {
     background: #495057;
+    
 }
 
 .sidebar .menu li.active {
     background: #007bff;
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+}
+
+/* 收缩后隐藏 welcome-message */
+.sidebar.collapsed .welcome-text{
+    display: none !important;
 }
 
 .main-content {
@@ -208,16 +379,12 @@ iframe {
 }
 
 .welcome-message {
-    /* background: linear-gradient(to right, #4a4e69, #222831); */
-    /* 专业级渐变背景 */
     color: #f8f9fa;
-    /* 浅色文字，增强对比度 */
     text-align: center;
+    margin-top:3.1rem;
     padding: 15px 20px;
-    border-radius: 8px;
-    /* 轻微圆角，显得现代 */
-    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); */
-    border-bottom: 1px solid #888888;
+    /* border-radius: 8px; */
+    /* border-bottom: 1px solid #888888; */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -225,9 +392,7 @@ iframe {
 
 .welcome-message i {
     font-size: 40px;
-    /* 用户头像大一点 */
     color: #ffc107;
-    /* 高亮色，增强视觉吸引力 */
     margin-bottom: 15px;
 }
 
@@ -244,15 +409,6 @@ iframe {
     /* 让时间部分稍微柔和些，不抢主视觉 */
 }
 
-.quitAdminBtn {
-    position: absolute;
-    bottom: 1rem;
-    left: 1.5rem;
-    width: 100%;
-}
-
-.quitAdminBtn a {
-    color: white;
-    display: inline-block;
-    padding: 5px 10px;
+.avatar{
+    margin-bottom:1rem;
 }

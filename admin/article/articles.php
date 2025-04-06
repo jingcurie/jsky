@@ -2,9 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require '../includes/db.php';
-require '../includes/auth.php';
-require '../includes/functions.php';
+require_once __DIR__ . '/../../includes/config.php';
+require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/auth.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('login.php');
@@ -19,27 +20,37 @@ if ($category_id) {
     redirect('categories.php');
 }
 
-// 单个删除文章（原有逻辑不变）
+// 单个删除文章
 if (isset($_GET['delete_id'])) {
-    if (delete($conn, 'articles', 'id', $_GET['delete_id'])) {
+    if (deleteArticleWithImages($conn, $_GET['delete_id'])) {
+        // $_SESSION['success_message'] = '文章删除成功';
         redirect("articles.php?category_id=$category_id");
     } else {
         $error = "删除文章失败";
     }
 }
 
-// 新增：批量删除处理
+// 批量删除处理
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete'])) {
     if (!empty($_POST['selected_articles'])) {
-        $ids = implode(',', array_map('intval', $_POST['selected_articles']));
-        $sql = "DELETE FROM articles WHERE id IN ($ids) AND category_id = ?";
-        $stmt = $conn->prepare($sql);
-        if ($stmt->execute([$category_id])) {
-            $_SESSION['success_message'] = '成功删除选中的文章';
-            redirect("articles.php?category_id=$category_id");
-        } else {
-            $error = "批量删除失败";
+        $successCount = 0;
+        $errorCount = 0;
+        
+        foreach ($_POST['selected_articles'] as $articleId) {
+            if (deleteArticleWithImages($conn, $articleId)) {
+                $successCount++;
+            } else {
+                $errorCount++;
+            }
         }
+        
+        // if ($errorCount === 0) {
+        //     $_SESSION['success_message'] = "成功删除 {$successCount} 篇文章";
+        // } else {
+        //     $_SESSION['warning_message'] = "成功删除 {$successCount} 篇文章，{$errorCount} 篇删除失败";
+        // }
+        
+        redirect("articles.php?category_id=$category_id");
     } else {
         $error = "请先选择要删除的文章";
     }
@@ -53,8 +64,8 @@ $sort_order = isset($_GET['order']) && $_GET['order'] === 'asc' ? 'ASC' : 'DESC'
 
 $statusBadge = [
     'draft' => ['color' => 'secondary', 'icon' => 'fa-edit', 'text' => '草稿'],
-    'published' => ['color' => 'success', 'icon' => 'fa-check-circle', 'text' => '已发布'],
-    'archived' => ['color' => 'dark', 'icon' => 'fa-archive', 'text' => '已归档']
+    'published' => ['color' => 'success', 'icon' => 'fa-check-circle', 'text' => '发布'],
+    'archived' => ['color' => 'dark', 'icon' => 'fa-archive', 'text' => '归档']
 ];
 
 $statusFilter = $_GET['status'] ?? '';
@@ -89,7 +100,7 @@ $articles = query(
     <title>文章管理</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="../assets/css/admin_style.css" rel="stylesheet">
+    <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
     <style>
         .checkbox-cell {
             width: 40px;
@@ -112,7 +123,7 @@ $articles = query(
 
         <?php if (isset($_SESSION['success_message'])): ?>
             <div class="alert alert-success"><?= $_SESSION['success_message'];
-                                                unset($_SESSION['success_message']); ?></div>
+            unset($_SESSION['success_message']); ?></div>
         <?php endif; ?>
 
         <div class="d-flex justify-content-between mb-3">
@@ -120,8 +131,8 @@ $articles = query(
                 <i class="fas fa-plus"></i> 新建文章
             </a>
 
-            <button type="button" id="bulkDeleteBtn" class="btn btn-danger" disabled
-                data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+            <button type="button" id="bulkDeleteBtn" class="btn btn-danger" disabled data-bs-toggle="modal"
+                data-bs-target="#bulkDeleteModal">
                 <i class="fas fa-trash"></i> 批量删除 (<span id="selectedCount">0</span>)
             </button>
         </div>
@@ -146,14 +157,31 @@ $articles = query(
                         <th class="checkbox-cell">
                             <input type="checkbox" id="selectAll" class="form-check-input">
                         </th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=status&order=<?= $sort_column === 'status' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">
-                                状态 <i class="fas <?= $sort_column === 'status' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=status&order=<?= $sort_column === 'status' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">
+                                状态 <i
+                                    class="fas <?= $sort_column === 'status' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i>
                             </a></th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=title&order=<?= $sort_column === 'title' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">标题 <i class="fas <?= $sort_column === 'title' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=author&order=<?= $sort_column === 'author' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">作者 <i class="fas <?= $sort_column === 'author' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=created_at&order=<?= $sort_column === 'created_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">创建时间 <i class="fas <?= $sort_column === 'created_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=updated_at&order=<?= $sort_column === 'updated_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">修改时间 <i class="fas <?= $sort_column === 'updated_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
-                        <th><a href="?category_id=<?= $category_id ?>&sort=view_count&order=<?= $sort_column === 'view_count' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>" class="text-light text-decoration-none">访问量 <i class="fas <?= $sort_column === 'view_count' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a></th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=title&order=<?= $sort_column === 'title' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">标题 <i
+                                    class="fas <?= $sort_column === 'title' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a>
+                        </th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=author&order=<?= $sort_column === 'author' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">作者 <i
+                                    class="fas <?= $sort_column === 'author' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a>
+                        </th>
+                        <th><a href="?category_id=<?= $category_id ?>&sort=created_at&order=<?= $sort_column === 'created_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">创建时间 <i
+                                    class="fas <?= $sort_column === 'created_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a>
+                        </th>
+                        <!-- <th><a href="?category_id=<?= $category_id ?>&sort=updated_at&order=<?= $sort_column === 'updated_at' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">修改时间 <i
+                                    class="fas <?= $sort_column === 'updated_at' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a>
+                        </th> -->
+                        <th><a href="?category_id=<?= $category_id ?>&sort=view_count&order=<?= $sort_column === 'view_count' && $sort_order === 'ASC' ? 'desc' : 'asc' ?>"
+                                class="text-light text-decoration-none">访问量 <i
+                                    class="fas <?= $sort_column === 'view_count' ? ($sort_order === 'ASC' ? 'fa-sort-up' : 'fa-sort-down') : 'fa-sort' ?>"></i></a>
+                        </th>
                         <th>封面图片</th>
                         <th>操作</th>
                     </tr>
@@ -162,35 +190,40 @@ $articles = query(
                     <?php foreach ($articles as $article): ?>
                         <tr>
                             <td class="checkbox-cell">
-                                <input type="checkbox" name="selected_articles[]" value="<?= $article['id'] ?>" class="form-check-input article-checkbox">
+                                <input type="checkbox" name="selected_articles[]" value="<?= $article['id'] ?>"
+                                    class="form-check-input article-checkbox">
                             </td>
                             <td>
                                 <?php $status = $article['status'] ?? 'draft'; ?>
-                                <span class="badge bg-<?= $statusBadge[$status]['color'] ?> rounded-pill d-inline-flex align-items-center"
-                                    data-bs-toggle="tooltip"
-                                    title="最后修改: <?= $article['updated_at'] ?>">
+                                <span
+                                    class="badge bg-<?= $statusBadge[$status]['color'] ?> rounded-pill d-inline-flex align-items-center"
+                                    data-bs-toggle="tooltip" title="最后修改: <?= $article['updated_at'] ?>">
                                     <i class="fas <?= $statusBadge[$status]['icon'] ?> me-1"></i>
-                                    <?= $statusBadge[$status]['text'] ?>
+                                    <!-- <?= $statusBadge[$status]['text'] ?> -->
                                 </span>
                             </td>
                             <td><?= htmlspecialchars($article['title']) ?></td>
                             <td><?= htmlspecialchars($article['author']) ?></td>
                             <td><?= htmlspecialchars($article['created_at']) ?></td>
-                            <td><?= htmlspecialchars($article['updated_at']) ?></td>
+                            <!-- <td><?= htmlspecialchars($article['updated_at']) ?></td> -->
                             <td><?= htmlspecialchars($article['view_count']) ?></td>
                             <td>
                                 <?php if (!empty($article['cover_image'])): ?>
-                                    <img src="/assets/images/uploads/<?= htmlspecialchars($article['cover_image']) ?>" alt="封面" style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    <img src="<?php echo ARTICLE_URL . "/" .htmlspecialchars($article['cover_image']) ?>" alt="封面"
+                                        style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
                                 <?php else: ?>
-                                    <img src="/assets/images/default_cover_image.jpg" alt="封面" style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    <img src="<?php echo ARTICLE_URL ?>/default_cover_image.jpg" alt="封面"
+                                        style="width: 80px; height: 50px; object-fit: cover; border-radius: 5px;">
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="view.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> 查看</a>
-                                <a href="article_form.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> 修改</a>
+                                <a href="view.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>"
+                                    class="btn btn-view btn-sm"><i class="fas fa-eye"></i> 查看</a>
+                                <a href="article_form.php?id=<?= $article['id'] ?>&category_id=<?= $category_id ?>"
+                                    class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
 
 
-                                <button class="btn btn-danger btn-sm"
+                                <button class="btn btn-delete btn-sm"
                                     onclick="event.preventDefault(); openDeleteModal('<?= htmlspecialchars(addslashes($article['title'])) ?>', 'articles.php?category_id=<?= $category_id ?>&delete_id=<?= $article['id'] ?>')">
                                     <i class="fas fa-trash"></i> 删除
                                 </button>
@@ -228,14 +261,15 @@ $articles = query(
             </div>
         </form>
 
-        
 
-        <!-- 原有删除模态框（确保存在且不变） -->
-        <?php require '../includes/delete_modal.php'; ?>
-        
-        <script src="/assets/js/admin.js"></script>
+
+        <!-- 引入通用删除模态框 -->
+        <?php require_once INCLUDE_PATH . '/delete_modal.php'; ?>
+
+        <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        
+        <script src="<?= JS_URL ?>/admin.js"></script>
+
     </div>
 </body>
 
