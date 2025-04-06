@@ -60,6 +60,12 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span id="current-time"></span>
             </div>
         </div> -->
+        <div class="hamburger">
+            <img src="/assets/images/jinshan_logo2.png" alt="Logo" class="logo"> <!-- 👈 换成你的 logo 路径 -->
+            <div class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
         <div class="welcome-message">
             <div class="avatar">
                 <i class="fas fa-user-circle"></i>
@@ -69,10 +75,10 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div id="current-time">2025-04-05</div>
             </div>
         </div>
-
+<!-- 
         <div class="toggle-btn" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
-        </div>
+        </div> -->
 
         <div class="menu-scroll">
             <ul class="menu list-unstyled">
@@ -107,7 +113,8 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="main-content">
-        <iframe id="mainFrame"></iframe>
+        <iframe id="mainFrame" src="dashboard.php" frameborder="0" width="100%" height="100%">
+        </iframe>
     </div>
 
     <div class="floating-submenu" id="floatingSubmenu">
