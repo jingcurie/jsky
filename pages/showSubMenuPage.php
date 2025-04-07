@@ -86,6 +86,9 @@ if ($article_category_id) {
                 <?php $article = $articles[0]; ?>
                 <article>
                     <h2><?= htmlspecialchars($article['title']) ?></h2>
+                    <?php
+                     $conn->prepare("UPDATE articles SET view_count = view_count + 1 WHERE id = ?")->execute([$article["id"]]);
+                     ?>
                     <?php if (in_array($article['category_id'], [1, 2])): ?>
                         <p><strong>发布时间：</strong><?= date("Y年m月d日", strtotime($article['published_at'])); ?></p>
                     <?php endif; ?>

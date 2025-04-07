@@ -22,72 +22,63 @@ try {
     die("Database connection failed: " . $e->getMessage());
 }
 
-function get_count($table) {
+// 获取文章统计数据
+function get_dashboard_stats()
+{
     global $conn;
-    $stmt = $conn->prepare("SELECT COUNT(*) AS count FROM $table");
-    $stmt->execute();
-    return $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+    $stmt = $conn->query("
+        SELECT 
+            (SELECT COUNT(*) FROM articles) as articles_count,
+            (SELECT COUNT(*) FROM users) as users_count,
+            (SELECT SUM(view_count) FROM articles) as total_views,
+            (SELECT COUNT(*) FROM articles WHERE status = 'draft') as pending_articles
+    ");
+    $basic_stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // 获取文章分类统计
+    $stmt = $conn->query("
+        SELECT c.name AS category_name, COUNT(a.id) AS article_count
+        FROM articles a
+        LEFT JOIN categories c ON a.category_id = c.id
+        WHERE a.status = 'published'
+        GROUP BY c.name
+    ");
+    $article_categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 获取热门文章
+    $stmt = $conn->query("
+        SELECT title, view_count 
+        FROM articles 
+        ORDER BY view_count DESC 
+        LIMIT 5
+    ");
+    $top_articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 获取浏览趋势
+    $stmt = $conn->prepare("
+        SELECT SUM(view_count) as views, DATE(created_at) as date 
+        FROM articles 
+        WHERE created_at >= ? 
+        GROUP BY date 
+        ORDER BY date ASC
+    ");
+    $stmt->execute([date('Y-m-01', strtotime('-6 months'))]);
+    $view_trends = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return [
+        'basic_stats' => $basic_stats,
+        'article_categories' => $article_categories,
+        'top_articles' => $top_articles,
+        'view_trends' => $view_trends
+    ];
 }
 
-function get_article_categories_count() {
-    global $conn;
-    $stmt = $conn->prepare("SELECT c.name AS category_name, COUNT(a.id) AS article_count
-                            FROM articles a
-                            LEFT JOIN categories c ON a.category_id = c.id
-                            WHERE a.status = 'published'
-                            GROUP BY c.name");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-function get_user_roles_count() {
-    global $conn;
-    $stmt = $conn->prepare("SELECT r.role_name, COUNT(u.user_id) AS count 
-                            FROM users u 
-                            LEFT JOIN roles r ON u.role_id = r.role_id 
-                            GROUP BY r.role_name");
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-$articles_count = get_count('articles');
-$users_count = get_count('users');
-$article_categories = get_article_categories_count();
-$user_roles = get_user_roles_count();
-
-$today_views_stmt = $conn->prepare("SELECT SUM(view_count) as views FROM articles WHERE DATE(created_at) = CURDATE()");
-$today_views_stmt->execute();
-$today_views_count = $today_views_stmt->fetch(PDO::FETCH_ASSOC)['views'] ?? 0;
-
-$pending_stmt = $conn->prepare("SELECT COUNT(*) as count FROM articles WHERE status = 'pending'");
-$pending_stmt->execute();
-$pending_articles_count = $pending_stmt->fetch(PDO::FETCH_ASSOC)['count'];
-
-$stmt = $conn->query("SELECT device_type, COUNT(*) as count FROM visit_logs GROUP BY device_type");
-$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$view_trends_stmt = $conn->prepare("
-    SELECT SUM(view_count) as views, DATE(created_at) as date 
-    FROM articles 
-    WHERE created_at >= ? 
-    GROUP BY date 
-    ORDER BY date ASC
-");
-$view_trends_stmt->execute([date('Y-m-01', strtotime('-6 months'))]);
-$view_trend_data = $view_trends_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$top_articles_stmt = $conn->prepare("
-    SELECT title, view_count 
-    FROM articles 
-    ORDER BY view_count DESC 
-    LIMIT 5
-");
-$top_articles_stmt->execute();
-$top_articles_data = $top_articles_stmt->fetchAll(PDO::FETCH_ASSOC);
+$stats = get_dashboard_stats();
 ?>
-
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <title>控制面板</title>
@@ -95,161 +86,275 @@ $top_articles_data = $top_articles_stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .card{
+            border-radius:30px;
+            transition: all 0.5s;
+        }   
+        .card:hover{
+            box-shadow: 0 2px 4px #88888888;
+            transform: scale(1.01);
+        }
+    </style>
 </head>
+
 <body>
-<div class="container-fluid py-4">
+    <div class="container-fluid py-4">
+        <!-- 顶部指标卡片 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <i class="fas fa-newspaper fs-4 me-3 text-primary"></i>
+                    <div>
+                        <h6 class="mb-1">文章总数</h6>
+                        <strong><?= $stats['basic_stats']['articles_count'] ?> 篇</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <i class="fas fa-eye fs-4 me-3 text-warning"></i>
+                    <div>
+                        <h6 class="mb-1">文章总浏览</h6>
+                        <strong><?= $stats['basic_stats']['total_views'] ?? 0 ?> 次</strong>
+                    </div>
+                </div>
+            </div> 
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <i class="fas fa-exclamation-triangle fs-4 me-3 text-danger"></i>
+                    <div>
+                        <h6 class="mb-1">待发布文章</h6>
+                        <strong><?= $stats['basic_stats']['pending_articles'] ?> 条</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <i class="fas fa-users fs-4 me-3 text-success"></i>
+                    <div>
+                        <h6 class="mb-1">用户数量</h6>
+                        <strong><?= $stats['basic_stats']['users_count'] ?> 位</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card p-3 d-flex flex-row align-items-center">
-                <i class="fas fa-newspaper fs-4 me-3 text-primary"></i>
-                <div>
-                    <h6 class="mb-1">文章总数</h6>
-                    <strong><?= $articles_count ?> 篇</strong>
+        <!-- 主要内容区域 -->
+        <div class="row g-4">
+            <!-- 左栏 -->
+            <div class="col-lg-8">
+                <div class="card p-3 mb-4">
+                    <h6 class="mb-3"><i class="fas fa-chart-line me-2"></i>内容数据趋势（过去6个月内，每天创建的文章的总浏览量）</h6>
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="contentTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card p-3">
+                    <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>访问分析</h6>
+                    <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="visitAnalysisChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 d-flex flex-row align-items-center">
-                <i class="fas fa-users fs-4 me-3 text-success"></i>
-                <div>
-                    <h6 class="mb-1">用户数量</h6>
-                    <strong><?= $users_count ?> 位</strong>
+
+            <!-- 右栏 -->
+            <div class="col-lg-4">
+                <div class="card p-3 mb-4">
+                    <h6 class="mb-3"><i class="fas fa-th-large me-2"></i>文章分类</h6>
+                    <canvas id="categoryChart"></canvas>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 d-flex flex-row align-items-center">
-                <i class="fas fa-eye fs-4 me-3 text-warning"></i>
-                <div>
-                    <h6 class="mb-1">今日浏览</h6>
-                    <strong><?= $today_views_count ?> 次</strong>
+
+                <div class="card p-3">
+                    <h6 class="mb-3"><i class="fas fa-trophy me-2"></i>热门文章</h6>
+                    <ul class="list-group list-group-flush">
+                        <?php foreach ($stats['top_articles'] as $article): ?>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span class="text-truncate" style="max-width: 70%;"><?= htmlspecialchars($article['title']) ?></span>
+                                <span class="badge bg-warning"><?= $article['view_count'] ?> 浏览</span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card p-3 d-flex flex-row align-items-center">
-                <i class="fas fa-exclamation-triangle fs-4 me-3 text-danger"></i>
-                <div>
-                    <h6 class="mb-1">待处理</h6>
-                    <strong><?= $pending_articles_count ?> 条</strong>
+
+                <!-- 新增：每小时访问量图表（添加在这里！） -->
+                <div class="card p-3 mt-4"> <!-- mt-4 是上边距，避免紧贴上方卡片 -->
+                    <h6 class="mb-3"><i class="fas fa-clock me-2"></i>每小时访问量</h6>
+                    <canvas id="hourlyVisitChart" height="250"></canvas> <!-- 固定高度避免过大 -->
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mt-4">
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>文章浏览趋势</h6>
-                <canvas id="viewTrendChart"></canvas>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h6 class="mb-3"><i class="fas fa-user-cog me-2"></i>用户角色统计</h6>
-                <canvas id="userRoleChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4 mt-4">
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h6 class="mb-3"><i class="fas fa-th-large me-2"></i>文章分类统计</h6>
-                <canvas id="categoryChart"></canvas>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h6 class="mb-3"><i class="fas fa-trophy me-2"></i>热度榜单</h6>
-                <ul class="list-group list-group-flush">
-                    <?php foreach ($top_articles_data as $article): ?>
-                        <li class="list-group-item d-flex justify-content-between">
-                            <strong><?= htmlspecialchars($article['title']) ?></strong>
-                            <span class="badge bg-warning"><?= $article['view_count'] ?> 浏览</span>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-    const viewTrendChart = new Chart(document.getElementById('viewTrendChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: <?= json_encode(array_column($view_trend_data, 'date')) ?>,
-            datasets: [{
-                label: '浏览量',
-                data: <?= json_encode(array_column($view_trend_data, 'views')) ?>,
-                borderColor: 'rgba(255, 159, 64, 1)',
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                tension: 0.3
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 初始化内容趋势图表
+        const contentTrendChart = new Chart(
+            document.getElementById('contentTrendChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: <?= json_encode(array_column($stats['view_trends'], 'date')) ?>,
+                    datasets: [{
+                        label: '文章浏览量',
+                        data: <?= json_encode(array_column($stats['view_trends'], 'views')) ?>,
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
             }
-        }
-    });
+        );
 
-    const categoryChart = new Chart(document.getElementById('categoryChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode(array_column($article_categories, 'category_name')) ?>,
-            datasets: [{
-                label: '文章数量',
-                data: <?= json_encode(array_column($article_categories, 'article_count')) ?>,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.6)',
-                    'rgba(255, 99, 132, 0.6)',
-                    'rgba(255, 206, 86, 0.6)',
-                    'rgba(75, 192, 192, 0.6)',
-                    'rgba(153, 102, 255, 0.6)'
-                ],
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            scales: {
-                x: { beginAtZero: true }
+        // 初始化分类图表
+        const categoryChart = new Chart(
+            document.getElementById('categoryChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: <?= json_encode(array_column($stats['article_categories'], 'category_name')) ?>,
+                    datasets: [{
+                        data: <?= json_encode(array_column($stats['article_categories'], 'article_count')) ?>,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#8AC24A', '#EA5F89'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
             }
-        }
-    });
+        );
 
-    const userRoleChart = new Chart(document.getElementById('userRoleChart').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode(array_column($user_roles, 'role_name')) ?>,
-            datasets: [{
-                label: '用户数量',
-                data: <?= json_encode(array_column($user_roles, 'count')) ?>,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 206, 86, 0.7)'
-                ],
-                borderColor: '#fff',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            scales: {
-                x: { beginAtZero: true }
+        // 异步加载访问分析数据
+        document.addEventListener("DOMContentLoaded", async function() {
+            try {
+                const response = await fetch('get_visit_stats.php');
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const visitData = await response.json();
+                renderVisitAnalysis(visitData);
+            } catch (error) {
+                console.error('Error loading visit data:', error);
             }
+        });
+
+        function renderVisitAnalysis(data) {
+            // 访问分析图表（组合图表）
+            new Chart(document.getElementById('visitAnalysisChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.trend_data.map(row => row.date),
+                    datasets: [{
+                            label: '总访问量',
+                            data: data.trend_data.map(row => row.count),
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            type: 'bar',
+                            order: 2
+                        },
+                        {
+                            label: '移动端',
+                            data: data.trend_data.map(row => data.device_by_day['Mobile']?.[row.date] || 0),
+                            borderColor: '#FF6384',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            type: 'line',
+                            order: 1,
+                            tension: 0.3
+                        },
+                        {
+                            label: '台式机',
+                            data: data.trend_data.map(row => data.device_by_day['Desktop']?.[row.date] || 0),
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            borderColor: '#1E88E5',
+                            borderWidth: 2,
+                            order: 0, // 柱状图在底层
+                            type: 'line',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        subtitle: {
+                            display: true,
+                            text: `今日访问: ${data.today_visits} | 独立访客: ${data.unique_visitors}`,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 新增：渲染每小时访问量图表
+            new Chart(document.getElementById('hourlyVisitChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.hourly_data.map(row => row.hour + ':00'), // X轴：0-23时
+                    datasets: [{
+                        label: '访问量',
+                        data: data.hourly_data.map(row => row.count),
+                        backgroundColor: '#36A2EB',
+                        borderColor: '#1E88E5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false // 隐藏图例（因为只有一个数据集）
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '访问次数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间（小时）'
+                            }
+                        }
+                    }
+                }
+            });
         }
-    });
-</script>
+    </script>
 </body>
+
 </html>

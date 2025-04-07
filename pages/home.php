@@ -1,12 +1,22 @@
 <?php
 $banners = query($conn, "SELECT * FROM site_banners");
 
-$device_type = (preg_match('/mobile|android|iphone|ipad/i', $_SERVER['HTTP_USER_AGENT'])) ? 'Mobile' : 'Desktop';
-$ip = $_SERVER['REMOTE_ADDR'];
-$user_agent = $_SERVER['HTTP_USER_AGENT'];
+// $device_type = (preg_match('/mobile|android|iphone|ipad/i', $_SERVER['HTTP_USER_AGENT'])) ? 'Mobile' : 'Desktop';
+// $ip = $_SERVER['REMOTE_ADDR'];
+// $user_agent = $_SERVER['HTTP_USER_AGENT'];
 
-$stmt = $conn->prepare("INSERT INTO visit_logs (device_type, ip_address, user_agent) VALUES (?, ?, ?)");
-$stmt->execute([$device_type, $ip, $user_agent]);
+// $stmt = $conn->prepare("INSERT INTO visit_logs (device_type, ip_address, user_agent) VALUES (?, ?, ?)");
+// $stmt->execute([$device_type, $ip, $user_agent]);
+
+if (!isset($_SESSION['device_logged'])) {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $device_type = (preg_match('/mobile|android|iphone|ipad/i', $user_agent)) ? 'Mobile' : 'Desktop';
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $stmt = $conn->prepare("INSERT INTO visit_logs (device_type, ip_address, user_agent) VALUES (?, ?, ?)");
+    $stmt->execute([$device_type, $ip, $user_agent]);
+    $_SESSION['device_logged'] = true; // 防止重复记录
+}
 ?>
 
 <main>
