@@ -24,7 +24,7 @@ include '../templates/header.php';
     <?php if (!empty($subMenus)): ?>
       <ul>
         <?php foreach ($subMenus as $menu): ?>
-          <li class="<?= ($menu['article_category_id'] == $article_category_id) ? 'active' : '' ?>">
+          <li style="justify-content: start;" class="<?= ($menu['article_category_id'] == $article_category_id) ? 'active' : '' ?>">
             <?php if ($menu['menu_type'] === 'article'): ?>
               <a href="showSubMenuPage.php?menu_id=<?= urlencode($parentId) ?>&article_category_id=<?= urlencode($menu['article_category_id']) ?>">
                 <?= htmlspecialchars($menu['name']) ?>

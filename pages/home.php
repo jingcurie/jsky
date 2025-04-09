@@ -116,7 +116,7 @@ if (!isset($_SESSION['device_logged'])) {
             <div class="announcement-grid">
                 <?php if (!empty($announcements)): ?>
                     <?php foreach ($announcements as $article): ?>
-                        <article class="announcement card" data-aos="fade-up">
+                        <article class="announcement card" data-aos="fade-up" data-aos-duration="1000">
                             <div>
                                 <a href="/pages/client_view_article.php?id=<?= $article['id']; ?>"><img src="<?= ARTICLE_URL ?><?= htmlspecialchars($article['cover_image']) ?: 'assets/images/default_article_iamge.jpg'; ?>" alt="公告图片"></a>
                                 <p class="summary">

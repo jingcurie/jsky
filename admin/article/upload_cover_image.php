@@ -59,6 +59,7 @@ $fileName = 'cover_' . bin2hex(random_bytes(8)) . '.' . $ext; // 更安全的随
 $targetDir = realpath(__DIR__ . "/../../uploads/articles/") . '/';
 $targetFile = $targetDir . $fileName;
 
+
 // 创建目录（如果不存在）
 if (!is_dir($targetDir)) {
     if (!mkdir($targetDir, 0755, true)) {
@@ -66,6 +67,15 @@ if (!is_dir($targetDir)) {
         exit;
     }
 }
+
+if (!is_dir($targetDir)) {
+    echo json_encode(["success" => false, "error" => "目标目录不存在"]);
+    exit;
+}
+
+// echo $file["tmp_name"]. "<br>";
+// echo $targetFile;
+// exit;
 
 // 移动上传文件
 if (!move_uploaded_file($file["tmp_name"], $targetFile)) {

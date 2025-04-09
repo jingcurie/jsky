@@ -9,7 +9,10 @@ if (!isLoggedIn()) {
 
 // 删除模块
 if (isset($_GET['delete_id'])) {
-    if (delete($conn, 'modules', 'module_id', $_GET['delete_id'])) {
+    $module = getById($conn, "modules", "module_id", $_GET['delete_id']);
+    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '模块管理', $_GET['delete_id'], $module["module_name"]);
+    $success= delete($conn, 'modules', 'module_id', $_GET['delete_id']);
+    if ($success) {
         redirect('modules.php');
     } else {
         $error = "Error deleting module.";
@@ -26,8 +29,10 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 
@@ -44,7 +49,7 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
         <table class="table table-bordered table-hover">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>序号</th>
                     <th>图标</th>
                     <th>模块名称</th>
                     <th>描述</th>
@@ -54,9 +59,12 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($modules as $module): ?>
+                    <?php 
+                    $count = 0;
+                    foreach ($modules as $module): 
+                    $count++;?>
                     <tr>
-                        <td><?php echo htmlspecialchars($module['module_id']); ?></td>
+                        <td><?php echo $count; ?></td>
                         <td class="module-icon"><i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i>
                         </td>
                         <td><?php echo htmlspecialchars($module['module_name']); ?></td>

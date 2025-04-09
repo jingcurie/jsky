@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
@@ -28,24 +31,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($module_name) || empty($module_url)) {
         $error = "模块名称和 URL 不能为空！";
     } else {
+        $data = [
+            'module_name' => $module_name,
+            'description' => $description,
+            'module_icon' => $module_icon,
+            'module_url' => $module_url,
+            'module_order' => $module_order
+        ];
+
         if (!empty($module_id)) {
             // 更新模块
-            $sql = "UPDATE modules SET module_name = :module_name, description = :description, module_icon = :module_icon, module_url = :module_url, module_order = :module_order WHERE module_id = :module_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':module_id', $module_id);
+            $success = update($conn, "modules", "module_id", $id, $data);
+            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '模块管理', $module_id, $module_name);
         } else {
             // 新增模块
-            $sql = "INSERT INTO modules (module_name, description, module_icon, module_url, module_order) VALUES (:module_name, :description, :module_icon, :module_url, :module_order)";
-            $stmt = $conn->prepare($sql);
+            $success = insert($conn, "modules", $data);
+            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '模块管理', null, $data["name"]);
         }
 
-        $stmt->bindParam(':module_name', $module_name);
-        $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':module_icon', $module_icon);
-        $stmt->bindParam(':module_url', $module_url);
-        $stmt->bindParam(':module_order', $module_order);
-
-        if ($stmt->execute()) {
+        if ($success) {
             header("Location: modules.php");
             exit;
         } else {

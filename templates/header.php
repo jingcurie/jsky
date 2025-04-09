@@ -77,16 +77,19 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="keywords" content="<?= htmlspecialchars($settings['meta_keywords']) ?>">
-    <meta name="description" content="<?=htmlspecialchars($settings['meta_description']);?>">
-    <title><?=htmlspecialchars($settings['site_title']);?></title>
+    <meta name="description" content="<?= htmlspecialchars($settings['meta_description']); ?>">
+    <title><?= htmlspecialchars($settings['site_title']); ?></title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <script src="/assets/css/all.min.css"></script>
     <link rel="icon" type="image/png" href="<?= IMG_URL ?>/favicon.png">
     <link href="<?= CSS_URL ?>/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= CSS_URL ?>/main.css">
     <?php if (isset($current_page_css)) : ?>
         <link rel="stylesheet" href="<?php echo $current_page_css; ?>"> <!-- 动态加载特定页面的 CSS -->
     <?php endif; ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+    <script src="/assets/js/jquery-3.6.0.min.js"></script>
     <script src="<?= JS_URL ?>/aos.js"></script>
     <!-- 当前页面的额外 CSS 和 JS -->
     <?php echo $extraHead ?? ''; ?>
@@ -134,3 +137,23 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
         <!-- <div class="menu-toggle" onclick="toggleMenu()">☰</div> -->
         <?php echo renderMenu($menus); ?>
     </nav>
+
+    <script>
+        function toggleMenu() {
+            const menu_icon = document.querySelector('#menu-icon');
+            const menu = document.querySelector('.menu');
+            menu.classList.toggle('active');
+            menu_icon.classList.toggle('active');
+            if (menu_icon.classList.contains('active')) {
+                menu_icon.innerHTML = '&#10005;'; // 叉叉符号
+                menu_icon.style.color = '#FFFFFF';
+            } else {
+                menu_icon.innerHTML = '&#9776;'; // 汉堡包符号
+                menu_icon.style.color = '#000000';
+            }
+        }
+
+        function toggleDropdown(element) {
+            element.classList.toggle('active');
+        }
+    </script>

@@ -1,10 +1,17 @@
 <?php
-require '../includes/db.php'; // 引入数据库连接
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once __DIR__ . '/../includes/config.php';
+require INCLUDE_PATH . '/db.php';
+require INCLUDE_PATH . '/auth.php';
+require INCLUDE_PATH . '/functions.php';
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// 记住我功能
+// 记住我功能,如果存在，自动跳转
 if (isset($_COOKIE['remember_me'])) {
     $token = $_COOKIE['remember_me'];
     $sql = "SELECT * FROM users WHERE remember_token = :token";
@@ -16,8 +23,8 @@ if (isset($_COOKIE['remember_me'])) {
     if ($user) {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
-        $_SESSION['role_id'] = $user['role_id']; // 存储 role_id
-        header("Location: admin_dashboard.php"); // 自动跳转到管理面板
+        $_SESSION['role_id'] = $user['role_id'];
+        header("Location: index.php"); // 自动跳转到管理面板
         exit;
     }
 }
@@ -43,6 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['username'] = $user['username'];
         $_SESSION['role_id'] = $user['role_id']; // 存储 role_id
 
+        // 写入登录成功日志
+        log_login($conn, $user['user_id'], $user['username'], 1, '登录成功');
+
+        if ($user['must_change_password']) {
+            header("Location: change_password.php");
+            exit;
+        }
+
         // 记住我功能
         if ($remember_me) {
             $token = bin2hex(random_bytes(32));
@@ -55,13 +70,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':user_id', $user['user_id']);
             $stmt->execute();
         }
-
+        // 写入登录成功日志
+        log_login($conn, $user['user_id'], $user['username'], 1, '登录成功');
         header("Location: index.php"); // 登录成功后跳转
         exit;
     } else {
         $error = "用户名不存在或密码有误，请核实.";
+
+        // ✅ 写入登录失败日志（注意：user_id 使用 0 或 null）
+        log_login($conn, 0, $username, 0, '登录失败：用户名或密码错误');
     }
 }
+
 ?>
 
 <!DOCTYPE html>

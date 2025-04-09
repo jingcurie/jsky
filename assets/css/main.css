@@ -34,17 +34,22 @@ h3 {
 }
 
 .card {
-  background-color: #f8f9fa;
-  transition: all 0.5s;
+  background-color: #fefeff;
+  transition: all 1s !important;
+  border:1px solid #e9e8e8;
 }
 
 .card:hover {
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card > div:nth-of-type(2) {
   margin: 1rem;
+}
+
+.card > div:nth-of-type(2){
+  margin-bottom: 1.3rem;
 }
 
 .card > div:nth-of-type(1) {
@@ -53,6 +58,15 @@ h3 {
   display: flex;
   justify-content: center;
   align-items: center;
+  width:100%;
+}
+
+.card > div:nth-of-type(1) a {
+  width:100%;
+}
+
+.card > div:nth-of-type(1) a img{
+  aspect-ratio: 16/9;
 }
 
 .card > div:nth-of-type(1) .summary {
@@ -71,10 +85,6 @@ h3 {
   line-height: 2.5rem;
   z-index: 1000;
 }
-
-/*.card>div:nth-of-type(1):hover img{
-    filter: grayscale(100%) brightness(150%);
-}*/
 
 .card > div:nth-of-type(1):hover .summary {
   opacity: 1;
@@ -102,7 +112,7 @@ h3 {
   color: #555;
 }
 
-.card img {
+.card img{
   width: 100%;
   transition: all 2s;
 }
@@ -216,9 +226,9 @@ h3 {
     max-width: none !important; /* 清除最大宽度限制 */
   }
   header {
-    position:sticky;
+    /* position:sticky;
     top:0;
-    z-index: 1001;
+    z-index: 1001; */
     background-color: white;
   }
 }
@@ -369,6 +379,11 @@ footer img {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+  }
+
+  .menu-toggle {
+    z-index: 9999;
+    position: relative; /* 或 fixed */
   }
 
   .menu.active {

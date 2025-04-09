@@ -32,11 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = :article_id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':article_id', $article_id);
+        $article = getById($conn, "articles", "id", $article_id);
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', $article["category_id"].'类文章', $article_id, $title);
     } else {
         // **新增模式：插入文章**
         $sql = "INSERT INTO articles (category_id, title, content, author, cover_image, status, created_at) 
                 VALUES (:category_id, :title, :content, :author, :cover_image, :status, :created_at)";
         $stmt = $conn->prepare($sql);
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '新建', $category.'类文章', null, $title);
     }
 
     // 绑定参数

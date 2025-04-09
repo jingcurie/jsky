@@ -20,35 +20,20 @@
         duration: 1000
     });
 
-    function toggleMenu() {
-        console.log(0);
-        const menu_icon = document.querySelector('#menu-icon');
-        const menu = document.querySelector('.menu');
-        menu.classList.toggle('active');
-        menu_icon.classList.toggle('active');
-        if (menu_icon.classList.contains('active')) {
-            menu_icon.innerHTML = '&#10005;'; // 叉叉符号
-            menu_icon.style.color = '#FFFFFF';
-        } else {
-            menu_icon.innerHTML = '&#9776;'; // 汉堡包符号
-            menu_icon.style.color = '#000000';
-        }
-    }
+    // 刷新 AOS
+    AOS.refresh();
 
-    function toggleDropdown(element) {
-        element.classList.toggle('active');
-    }
 
     // 传递Banner数据给JavaScript
-    const bannerData = <?= json_encode(array_map(function($banner) {
-        return [
-            'image' => '/uploads/banners/' . $banner['image_path'],
-            'title' => $banner['title'],
-            'desc' => $banner['description'],
-            // 'url' => $banner['url'] ?? '#',
-            // 'target' => $banner['target'] ?? '_self'
-        ];
-    }, $banners)) ?>;
+    const bannerData = <?= json_encode(array_map(function ($banner) {
+                            return [
+                                'image' => '/uploads/banners/' . $banner['image_path'],
+                                'title' => $banner['title'],
+                                'desc' => $banner['description'],
+                                // 'url' => $banner['url'] ?? '#',
+                                // 'target' => $banner['target'] ?? '_self'
+                            ];
+                        }, $banners)) ?>;
 
     const bannerImage = document.getElementById("banner-image");
     const bannerDesc = document.querySelector(".banner-desc");

@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once __DIR__ . '/../../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
@@ -10,10 +13,14 @@ if (!isLoggedIn()) {
 
 // 删除分类
 if (isset($_GET['delete_id'])) {
-    if (delete($conn, 'categories', 'id', $_GET['delete_id'])) {
+    $category_id = $_GET['delete_id'];
+    $category = getById($conn, "categories", "id", $category_id);
+    if (delete($conn, 'categories', 'id', $category_id)) {
+        // 记录日志
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '分类管理', $category_id, $category["name"]);
         redirect('categories.php');
     } else {
-        $error = "Error deleting category.";
+        $error = "删除分类失败，请重试。";
     }
 }
 
@@ -27,8 +34,10 @@ $categories = getAll($conn, 'categories');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>分类管理</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 <body>
@@ -44,16 +53,21 @@ $categories = getAll($conn, 'categories');
         <table class="table table-bordered table-hover">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>序号</th>
                     <th>分类名称</th>
                     <th>分类描述</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($categories as $category): ?>
+
+                <?php 
+                    $count = 0;
+                    foreach ($categories as $category): 
+                    $count++;?>
                     <tr>
-                        <td><?php echo htmlspecialchars($category['id']); ?></td>
+                        <!-- <td><?php echo htmlspecialchars($category['id']); ?></td> -->
+                        <td><?php echo $count ?></td>
                         <td><?php echo htmlspecialchars($category['name']); ?></td>
                         <td><?php echo htmlspecialchars($category['description']); ?></td>
                         <td>

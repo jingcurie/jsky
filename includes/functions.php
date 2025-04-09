@@ -210,3 +210,81 @@ function isSafeToDelete($path) {
     error_log("Unsafe deletion attempt: " . $path);
     return false;
 }
+
+//操作日志
+function parse_user_agent($ua) {
+    $os = 'Unknown OS';
+    $device = 'Unknown Device';
+
+    // 简单示例：可扩展更详细规则
+    if (preg_match('/Windows NT 10.0/', $ua)) $os = 'Windows 10';
+    elseif (preg_match('/Windows NT 6.1/', $ua)) $os = 'Windows 7';
+    elseif (preg_match('/Mac OS X/', $ua)) $os = 'macOS';
+    elseif (preg_match('/Linux/', $ua)) $os = 'Linux';
+    elseif (preg_match('/Android/', $ua)) $os = 'Android';
+    elseif (preg_match('/iPhone/', $ua)) $os = 'iOS';
+
+    if (preg_match('/Chrome\/[\d.]+/', $ua, $match)) $device = $match[0];
+    elseif (preg_match('/Firefox\/[\d.]+/', $ua, $match)) $device = $match[0];
+    elseif (preg_match('/Safari\/[\d.]+/', $ua, $match)) $device = $match[0];
+    elseif (preg_match('/MSIE\s[\d.]+/', $ua, $match)) $device = $match[0];
+
+    return [$device, $os];
+}
+
+// 操作日志
+function log_operation($pdo, $user_id, $username, $action, $module, $object_id = null, $description = null) {
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    list($device, $os) = parse_user_agent($ua);
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+
+    // 使用 insert 封装函数插入数据
+    $data = [
+        'user_id' => $user_id,
+        'username' => $username,
+        'action' => $action,
+        'module' => $module,
+        'object_id' => $object_id,
+        'description' => $description,
+        'ip_address' => $ip,
+        'device' => $device,
+        'os' => $os
+    ];
+
+    return insert($pdo, 'log_operation', $data); // 调用通用的 insert 函数
+}
+
+// 登录日志
+function log_login($pdo, $user_id, $username, $status, $msg = null) {
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    list($device, $os) = parse_user_agent($ua);
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $location = "未知位置";//get_ip_location($ip);  // 可通过第三方API进行IP解析来填充
+
+    // 使用 insert 封装函数插入数据
+    $data = [
+        'user_id' => $user_id,
+        'username' => $username,
+        'ip_address' => $ip,
+        'location' => $location,
+        'device' => $device,
+        'os' => $os,
+        'status' => $status,
+        'msg' => $msg
+    ];
+
+    return insert($pdo, 'log_login', $data); // 调用通用的 insert 函数
+}
+
+//分析ip位置
+// function get_ip_location($ip) {
+//     $url = "http://ip-api.com/json/{$ip}?lang=zh-CN";
+//     $response = @file_get_contents($url);
+//     if ($response) {
+//         $data = json_decode($response, true);
+//         if ($data && $data['status'] === 'success') {
+//             return "{$data['country']} {$data['regionName']} {$data['city']}";
+//         }
+//     }
+//     return '未知位置';
+// }

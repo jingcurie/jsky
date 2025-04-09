@@ -49,8 +49,10 @@ if ($_GET['action'] === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($id) {
         update($conn, 'menu', 'id', $id, $data);
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '菜单管理', $id, $_POST['name']);
     } else {
         insert($conn, 'menu', $data);
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '菜单管理', null, $_POST['name']);
     }
     echo json_encode(["success" => true]);
     exit;
@@ -63,6 +65,8 @@ if ($_GET['action'] === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(["error" => "缺少菜单 ID"]);
         exit;
     }
+    $menu = getById($conn, "menu", "id", $id);
+    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '菜单管理', $id, $menu["name"]);
     delete($conn, 'menu', 'id', $id);
     echo json_encode(["success" => true]);
     exit;

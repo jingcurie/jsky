@@ -28,14 +28,16 @@ $author = "";
 $created_at = "";
 
 $cover_image = ""; // 默认值，避免未定义
+$category_name = "";
+
+if ($category_id > 0){
+    $category = getById($conn, "categories", "id", $category_id);
+    $category_name = $category["name"];
+}
 
 // 如果是编辑模式，获取文章数据
 if ($article_id > 0) {
-    $sql = "SELECT * FROM articles WHERE id = :article_id";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':article_id', $article_id);
-    $stmt->execute();
-    $article = $stmt->fetch(PDO::FETCH_ASSOC);
+    $article = getById($conn, "articles", "id", $article_id);
 
     if ($article) {
         $title = $article['title'];
@@ -311,7 +313,7 @@ if ($article_id > 0) {
     <div class="container mt-5">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h2><i class="fas fa-edit"></i> <?= $article_id > 0 ? "编辑文章" : "发布文章" ?></h2>
+                <h2><i class="fas fa-edit"></i> <?= $article_id > 0 ? "编辑文章" : "发布文章" ?>（<?= htmlspecialchars($category_name) ?>）</h2>
             </div>
             <div class="card-body">
                 <form action="publish.php" method="POST" onsubmit="return validateForm()">

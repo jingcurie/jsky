@@ -16,12 +16,8 @@ $error = '';
 
 // 如果是编辑模式，获取当前分类信息
 if ($category_id) {
-    $sql = "SELECT * FROM categories WHERE id = :category_id";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':category_id', $category_id);
-    $stmt->execute();
-    $category = $stmt->fetch(PDO::FETCH_ASSOC);
-
+    $category = getById($conn, 'categories', 'id', $category_id);
+    
     if ($category) {
         $category_name = $category['name'];
         $category_desc = $category['description'];
@@ -41,36 +37,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "分类描述不能为空！";
     } else {
         // 检查分类名称是否已存在（排除自身）
-        $sql = "SELECT * FROM categories WHERE name = :category_name" . ($category_id ? " AND id != :category_id" : "");
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':category_name', $category_name);
-        if ($category_id) {
-            $stmt->bindParam(':category_id', $category_id);
-        }
-        $stmt->execute();
-        $existingCategory = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existingCategory) {
+        if (isFieldValueExists($conn, 'categories', 'name', $category_name, $category_id)) {
             $error = "该分类名称已存在！";
         } else {
             if ($category_id) {
-                $sql = "UPDATE categories SET name = :category_name, description = :category_desc WHERE id = :category_id";
-                $stmt = $conn->prepare($sql);
-                $stmt->bindParam(':category_name', $category_name);
-                $stmt->bindParam(':category_desc', $category_desc);
-                $stmt->bindParam(':category_id', $category_id);
+                // 编辑模式：更新分类
+                $data = [
+                    'name' => $category_name,
+                    'description' => $category_desc,
+                ];
+                if (update($conn, 'categories', 'id', $category_id, $data)) {
+                    // 记录日志
+                    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '分类管理', $category_id, $category_name, '更新了分类');
+                    header("Location: categories.php");
+                    exit;
+                } else {
+                    $error = "更新失败，请重试！";
+                }
             } else {
-                $sql = "INSERT INTO categories (name, description) VALUES (:category_name, :category_desc)";
-                $stmt = $conn->prepare($sql);
-                $stmt->bindParam(':category_name', $category_name);
-                $stmt->bindParam(':category_desc', $category_desc);
-            }
-
-            if ($stmt->execute()) {
-                header("Location: categories.php");
-                exit;
-            } else {
-                $error = "保存失败，请重试！";
+                // 创建模式：插入新分类
+                $data = [
+                    'name' => $category_name,
+                    'description' => $category_desc,
+                ];
+                if (insert($conn, 'categories', $data)) {
+                    // 记录日志
+                    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '分类管理', null, $category_name, '创建了新分类');
+                    header("Location: categories.php");
+                    exit;
+                } else {
+                    $error = "保存失败，请重试！";
+                }
             }
         }
     }

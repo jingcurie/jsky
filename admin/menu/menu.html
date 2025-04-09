@@ -4,17 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>菜单管理</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <link href="../../assets/css/admin_style.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
+    <link href="/assets/css/admin_style.css" rel="stylesheet" />
+    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script> -->
+    <script src="/assets/js/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
     <style>
       /* 菜单树整体样式 */
       .menu-tree {
@@ -69,8 +67,6 @@
     </style>
   </head>
   <body>
-
-
     <div class="container mt-4">
       <h2 class="mb-3"><i class="fas fa-list"></i> 菜单管理</h2>
       <button class="btn btn-create" onclick="showMenuModal()">
@@ -156,7 +152,9 @@
       // 监听 menuType 变化，自动填充或清空 URL
       $("#menuType").change(function () {
         if ($(this).val() === "article") {
-          $("#menuUrl").val("/pages/showSubMenuPage.php").prop("disabled", true);
+          $("#menuUrl")
+            .val("/pages/showSubMenuPage.php")
+            .prop("disabled", true);
         } else {
           $("#menuUrl").val("").prop("disabled", false);
         }
@@ -224,7 +222,9 @@
 
           // 文章类型时，禁用 URL 并填充默认值
           if (menu.menu_type === "article") {
-            $("#menuUrl").val("/pages/showSubMenuPage.php").prop("disabled", true);
+            $("#menuUrl")
+              .val("/pages/showSubMenuPage.php")
+              .prop("disabled", true);
           } else {
             $("#menuUrl").prop("disabled", false);
           }

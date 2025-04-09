@@ -82,21 +82,13 @@ $stats = get_dashboard_stats();
 <head>
     <meta charset="UTF-8">
     <title>控制面板</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        .card{
-            border-radius:30px;
-            transition: all 0.5s;
-        }   
-        .card:hover{
-            box-shadow: 0 2px 4px #88888888;
-            transform: scale(1.01);
-        }
-    </style>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/all.min.css">
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+    <script src="/assets/js/chart.js"></script>
 </head>
 
 <body>
@@ -104,7 +96,7 @@ $stats = get_dashboard_stats();
         <!-- 顶部指标卡片 -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
-                <div class="card p-3 d-flex flex-row align-items-center">
+                <div class="card small-card p-3 d-flex flex-row align-items-center">
                     <i class="fas fa-newspaper fs-4 me-3 text-primary"></i>
                     <div>
                         <h6 class="mb-1">文章总数</h6>
@@ -113,16 +105,16 @@ $stats = get_dashboard_stats();
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card p-3 d-flex flex-row align-items-center">
+                <div class="card  small-card p-3 d-flex flex-row align-items-center">
                     <i class="fas fa-eye fs-4 me-3 text-warning"></i>
                     <div>
                         <h6 class="mb-1">文章总浏览</h6>
                         <strong><?= $stats['basic_stats']['total_views'] ?? 0 ?> 次</strong>
                     </div>
                 </div>
-            </div> 
+            </div>
             <div class="col-md-3">
-                <div class="card p-3 d-flex flex-row align-items-center">
+                <div class="card  small-card p-3 d-flex flex-row align-items-center">
                     <i class="fas fa-exclamation-triangle fs-4 me-3 text-danger"></i>
                     <div>
                         <h6 class="mb-1">待发布文章</h6>
@@ -131,7 +123,7 @@ $stats = get_dashboard_stats();
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card p-3 d-flex flex-row align-items-center">
+                <div class="card  small-card p-3 d-flex flex-row align-items-center">
                     <i class="fas fa-users fs-4 me-3 text-success"></i>
                     <div>
                         <h6 class="mb-1">用户数量</h6>
@@ -188,7 +180,7 @@ $stats = get_dashboard_stats();
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
     <script>
         // 初始化内容趋势图表
         const contentTrendChart = new Chart(

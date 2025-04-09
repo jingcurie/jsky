@@ -2,6 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
@@ -42,8 +43,8 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 
@@ -71,11 +72,11 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <i class="fas fa-user-circle"></i>
             </div>
             <div class="welcome-text">
-                <div id="welcome-text">欢迎您，Admin</div>
+                <div id="welcome-text">欢迎您，<?= htmlspecialchars($_SESSION['username']) ?></div>
                 <div id="current-time">2025-04-05</div>
             </div>
         </div>
-<!-- 
+        <!-- 
         <div class="toggle-btn" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </div> -->
@@ -84,12 +85,12 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             <ul class="menu list-unstyled">
                 <?php foreach ($modules as $module): ?>
                     <li <?php if ($module['module_name'] === '文章管理'): ?> onmouseover="showFloatingMenu(event)"
-                            onmouseleave="hideFloatingMenu()" onclick="toggleCategoryList();" <?php else: ?>
-                            onclick="loadPage('<?php echo htmlspecialchars($module['module_url']); ?>', this);" <?php endif; ?>>
+                        onmouseleave="hideFloatingMenu()" onclick="toggleCategoryList();" <?php else: ?>
+                        onclick="loadPage('<?php echo htmlspecialchars($module['module_url']); ?>', this);" <?php endif; ?>>
                         <i class="fas <?php echo htmlspecialchars($module['module_icon']); ?>"></i>
                         <span><?php echo htmlspecialchars($module['module_name']); ?></span>
                         <?php if ($module['module_name'] === '文章管理'): ?>
-                            <i class="fas fa-chevron-down ms-auto toggle-icon"></i>
+                            <i class="fas fa-chevron-down ms-auto toggle-icon" id="categoryArrow"></i>
                         <?php endif; ?>
                     </li>
                     <?php if ($module['module_name'] === '文章管理'): ?>
@@ -113,6 +114,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="main-content">
+
         <iframe id="mainFrame" src="dashboard.php" frameborder="0" width="100%" height="100%">
         </iframe>
     </div>
@@ -128,20 +130,17 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        // function loadPage(page, element) {
-        //     document.getElementById('mainFrame').src = page;
-        //     document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
-        //     element.classList.add('active');
-        // }
-
-        // function loadPage(page, element) {
-        //     let iframe = document.getElementById('mainFrame');
-        //     iframe.src = page + '?t=' + new Date().getTime(); // 添加时间戳，防止缓存
-
-        //     // 高亮当前选中的菜单项
-        //     document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
-        //     element.classList.add('active');
-        // }
+        // // 绑定菜单项点击事件
+        // document.querySelectorAll('.sidebar .menu li').forEach(item => {
+        //     item.addEventListener('click', function() {
+        //         // 切换子菜单显示
+        //         const submenu = this.querySelector('.category-list');
+        //         if (submenu) {
+        //             submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+        //             this.classList.toggle('active');
+        //         }
+        //     });
+        // });
 
         function loadPage(page, element) {
             let iframe = document.getElementById('mainFrame');
@@ -160,20 +159,6 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        // function loadPage(page, element) {
-        //     fetch(page) // 发送请求获取 HTML
-        //         .then(response => response.text()) // 获取文本内容
-        //         .then(html => {
-        //             document.getElementById('mainFrame').style.display = "none"; // 隐藏 iframe
-        //             document.querySelector('.main-content').innerHTML = html; // 插入 HTML
-        //         })
-        //         .catch(error => console.error('加载页面失败:', error));
-
-        //     // 高亮当前选中的菜单项
-        //     document.querySelectorAll('.menu li').forEach(item => item.classList.remove('active'));
-        //     element.classList.add('active');
-        // }
-
         function toggleSidebar() {
             let sidebar = document.getElementById("sidebar");
             //let welcomeMessage = document.querySelector(".welcome-message");
@@ -182,7 +167,17 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         function toggleCategoryList() {
             let categoryList = document.getElementById("categoryList");
-            categoryList.style.display = (categoryList.style.display === "block") ? "none" : "block";
+            // categoryList.style.display = (categoryList.style.display === "block") ? "none" : "block";
+            let arrowIcon = document.getElementById("categoryArrow");
+
+            // 检查子菜单当前状态并切换显示和箭头方向
+            if (categoryList.classList.contains("show")) {
+                categoryList.classList.remove("show");
+                arrowIcon.classList.remove("up");
+            } else {
+                categoryList.classList.add("show");
+                arrowIcon.classList.add("up");
+            }
         }
 
         function showFloatingMenu(event) {

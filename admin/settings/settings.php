@@ -30,6 +30,7 @@ if (isset($_GET['delete_id'])) {
 
         // 删除数据库中的记录
         delete($conn, 'site_banners', 'id', $_GET['delete_id']); 
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', 'banner', $_GET['delete_id'], null);
         redirect('settings.php#home');
 
         $success = "Banner 和图片已删除成功！";
@@ -91,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'setting_value' => $filename,
                 'setting_group' => 'basic'
             ]);
+            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', 'logo', null, null);
         }
         // === 上传处理结束 ===
 
@@ -139,6 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'setting_value' => isset($_POST['cache_enabled']) ? 1 : 0,
             'setting_group' => 'performance'
         ]);
+
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '站点信息', null, null);
         
         $conn->commit();
         $success = "设置已成功更新！";

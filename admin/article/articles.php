@@ -22,8 +22,10 @@ if ($category_id) {
 
 // 单个删除文章
 if (isset($_GET['delete_id'])) {
-    if (deleteArticleWithImages($conn, $_GET['delete_id'])) {
-        // $_SESSION['success_message'] = '文章删除成功';
+    $aritcle = getById($conn, "articles", "id", $_GET['delete_id']);
+    $success = deleteArticleWithImages($conn, $_GET['delete_id']);
+    if ($success) {
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $_GET['delete_id'], $aritcle["title"]);
         redirect("articles.php?category_id=$category_id");
     } else {
         $error = "删除文章失败";
@@ -37,18 +39,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete'])) {
         $errorCount = 0;
         
         foreach ($_POST['selected_articles'] as $articleId) {
-            if (deleteArticleWithImages($conn, $articleId)) {
+            $aritcle = getById($conn, "articles", "id", $articleId);
+            $success = deleteArticleWithImages($conn, $articleId);
+            if ($success) {
+                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $aritcle["id"], $aritcle["title"]);
                 $successCount++;
             } else {
                 $errorCount++;
             }
         }
-        
-        // if ($errorCount === 0) {
-        //     $_SESSION['success_message'] = "成功删除 {$successCount} 篇文章";
-        // } else {
-        //     $_SESSION['warning_message'] = "成功删除 {$successCount} 篇文章，{$errorCount} 篇删除失败";
-        // }
         
         redirect("articles.php?category_id=$category_id");
     } else {
