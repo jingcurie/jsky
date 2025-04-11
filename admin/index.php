@@ -2,18 +2,13 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once __DIR__ . '/../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 获取当前用户的角色 ID

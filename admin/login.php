@@ -1,3 +1,10 @@
+<script>
+if (window.top !== window.self) {
+  // 当前在 iframe 中，跳转顶层
+  window.top.location = window.location.href;
+}
+</script>
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -6,10 +13,6 @@ require_once __DIR__ . '/../includes/config.php';
 require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
 
 // 记住我功能,如果存在，自动跳转
 if (isset($_COOKIE['remember_me'])) {

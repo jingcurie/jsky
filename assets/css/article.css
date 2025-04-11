@@ -19,6 +19,7 @@
 .breadcrumb i {
     margin: 0 8px;
     font-size: 0.8em;
+    color: #666;
 }
 
 /* 文章标题区 */
@@ -60,14 +61,14 @@
     color: #444;
 }
 .article-body img {
-    max-width: 100%;
+    /* max-width: 100%; */
     height: auto;
-    margin: 20px 0;
-    cursor: zoom-in;
+    /* margin: 20px 0; */
+    /* cursor: zoom-in; */
 }
-.article-body p {
+/* .article-body p {
     margin-bottom: 1.5em;
-}
+} */
 .article-body h2, 
 .article-body h3 {
     margin: 1.5em 0 1em;

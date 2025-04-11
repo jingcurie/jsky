@@ -1,21 +1,25 @@
-<!-- 删除确认模态框 -->
+<!-- 单记录删除确认模态框 -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <form id="deleteForm" method="post" class="modal-content">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
             <div class="modal-header">
                 <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 确定要删除 <strong id="deleteItemName"></strong> 吗？
+                <input type="hidden" name="delete_id" id="deleteItemId">
+                <input type="hidden" name="category_id" id="categoryItemId">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <a id="confirmDeleteLink" class="btn btn-danger">删除</a>
+                <button type="submit" class="btn btn-danger">删除</button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
+
 
 <!-- 新增：批量删除确认模态框 -->
 <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true">

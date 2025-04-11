@@ -7,13 +7,14 @@ require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
-// 删除分类
-if (isset($_GET['delete_id'])) {
-    $category_id = $_GET['delete_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    $category_id = $_POST['delete_id'];
     $category = getById($conn, "categories", "id", $category_id);
     if (delete($conn, 'categories', 'id', $category_id)) {
         // 记录日志
@@ -23,6 +24,19 @@ if (isset($_GET['delete_id'])) {
         $error = "删除分类失败，请重试。";
     }
 }
+
+// 删除分类
+// if (isset($_GET['delete_id'])) {
+//     $category_id = $_GET['delete_id'];
+//     $category = getById($conn, "categories", "id", $category_id);
+//     if (delete($conn, 'categories', 'id', $category_id)) {
+//         // 记录日志
+//         log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '分类管理', $category_id, $category["name"]);
+//         redirect('categories.php');
+//     } else {
+//         $error = "删除分类失败，请重试。";
+//     }
+// }
 
 // 查询所有分类
 $categories = getAll($conn, 'categories');
@@ -72,9 +86,7 @@ $categories = getAll($conn, 'categories');
                         <td><?php echo htmlspecialchars($category['description']); ?></td>
                         <td>
                             <a href="category_form.php?id=<?php echo $category['id']; ?>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
-                            <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($category['name']); ?>', 'categories.php?delete_id=<?= $category['id'] ?>')">
-                                <i class="fas fa-trash"></i> 删除
-                            </button>
+                            <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($category['name']); ?>', <?= $category['id'] ?>)">删除</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -7,15 +7,17 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 删除用户
-if (isset($_GET['delete_id'])) {
-    $user = getById($conn, "users", "user_id", $_GET['delete_id']);
-    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '用户管理', $_GET['delete_id'], $user["username"]);
-    $success = delete($conn, 'users', 'user_id', $_GET['delete_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    $user = getById($conn, "users", "user_id", $_POST['delete_id']);
+    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '用户管理', $_POST['delete_id'], $user["username"]);
+    $success = delete($conn, 'users', 'user_id', $_POST['delete_id']);
     if ($success) {
         redirect('users.php');
     } else {
@@ -73,7 +75,7 @@ $users = query($conn, "SELECT users.user_id, users.username, users.email, roles.
                         <td><?php echo htmlspecialchars($user['role_name'] ?: '未分配'); ?></td>
                         <td>
                             <a href="user_form.php?user_id=<?php echo $user['user_id']; ?>" class="btn btn-edit btn-sm"><i class="fas fa-edit"></i>编辑</a>
-                            <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($user['username']); ?>', 'users.php?delete_id=<?= $user['user_id'] ?>')">
+                            <button class="btn btn-delete btn-sm" onclick="openDeleteModal('<?php echo htmlspecialchars($user['username']); ?>', '<?= $user['user_id'] ?>')">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
                         </td>

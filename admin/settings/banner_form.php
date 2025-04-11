@@ -10,7 +10,7 @@ require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 csrfProtect();
@@ -92,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($error)) {
         if ($is_edit) {
             if (update($conn, 'site_banners', 'id', $banner_id, $data)) {
+                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', 'banner', $banner_id, null);
                 $success = 'Banner更新成功！';
                 $banner = array_merge($banner, $data);
             } else {
@@ -99,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             if (insert($conn, 'site_banners', $data)) {
+                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', 'banner', null, null);
                 $success = 'Banner添加成功！';
                 $_POST = []; // 清空表单
                 // 重置banner数据，保持默认值
@@ -130,8 +132,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $is_edit ? '编辑' : '添加'; ?>Banner</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
 </head>
 <body>

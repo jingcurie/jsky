@@ -7,8 +7,10 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 初始化变量
@@ -161,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
             <div class="mb-3">
                 <label for="username" class="form-label"><i class="fas fa-user"></i> 用户名</label>
                 <input type="text" class="form-control" id="username" name="username" 

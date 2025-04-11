@@ -7,6 +7,8 @@ require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
     redirect('login.php');
 }
@@ -60,8 +62,10 @@ if ($article_id > 0) {
     <title><?= $article_id > 0 ? "编辑文章" : "发布文章" ?></title>
 
     <!-- Bootstrap + FontAwesome -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
 
     <!-- TinyMCE -->
     <script src="<?= JS_URL ?>/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
@@ -317,6 +321,7 @@ if ($article_id > 0) {
             </div>
             <div class="card-body">
                 <form action="publish.php" method="POST" onsubmit="return validateForm()">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
                     <input type="hidden" name="id" value="<?= $article_id ?>">
                     <input type="hidden" name="category_id" value="<?= $category_id ?>">
 

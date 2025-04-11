@@ -80,7 +80,7 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
     <meta name="description" content="<?= htmlspecialchars($settings['meta_description']); ?>">
     <title><?= htmlspecialchars($settings['site_title']); ?></title>
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
-    <script src="/assets/css/all.min.css"></script>
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link rel="icon" type="image/png" href="<?= IMG_URL ?>/favicon.png">
     <link href="<?= CSS_URL ?>/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= CSS_URL ?>/main.css">

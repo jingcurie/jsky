@@ -7,6 +7,8 @@ require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
     redirect('login.php');
 }
@@ -21,12 +23,12 @@ if ($category_id) {
 }
 
 // 单个删除文章
-if (isset($_GET['delete_id'])) {
-    $aritcle = getById($conn, "articles", "id", $_GET['delete_id']);
-    $success = deleteArticleWithImages($conn, $_GET['delete_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    $article = getById($conn, "articles", "id", $_POST['delete_id']);
+    $success = deleteArticleWithImages($conn, $_POST['delete_id']);
     if ($success) {
-        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $_GET['delete_id'], $aritcle["title"]);
-        redirect("articles.php?category_id=$category_id");
+        log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $_POST['delete_id'], $article["title"]);
+        redirect("articles.php?category_id=" . $_POST['category_id']);
     } else {
         $error = "删除文章失败";
     }
@@ -39,17 +41,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bulk_delete'])) {
         $errorCount = 0;
         
         foreach ($_POST['selected_articles'] as $articleId) {
-            $aritcle = getById($conn, "articles", "id", $articleId);
+            $article = getById($conn, "articles", "id", $articleId);
             $success = deleteArticleWithImages($conn, $articleId);
             if ($success) {
-                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $aritcle["id"], $aritcle["title"]);
+                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', $article["category_id"].'文章', $article["id"], $article["title"]);
                 $successCount++;
             } else {
                 $errorCount++;
             }
         }
         
+        $_SESSION['success_message'] = "成功删除 $successCount 篇文章";
         redirect("articles.php?category_id=$category_id");
+        
     } else {
         $error = "请先选择要删除的文章";
     }
@@ -97,8 +101,10 @@ $articles = query(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章管理</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <link href="<?= CSS_URL ?>/admin_style.css" rel="stylesheet">
     <style>
         .checkbox-cell {
@@ -148,8 +154,9 @@ $articles = query(
                 </a>
             <?php endforeach; ?>
         </div>
-
+        <!-- <input type="text" name="keyword" class="form-control" placeholder="搜索标题或作者" value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>"> -->
         <form id="bulkActionForm" method="post">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
             <table class="table table-bordered table-hover text-center">
                 <thead>
                     <tr>
@@ -223,7 +230,7 @@ $articles = query(
 
 
                                 <button class="btn btn-delete btn-sm"
-                                    onclick="event.preventDefault(); openDeleteModal('<?= htmlspecialchars(addslashes($article['title'])) ?>', 'articles.php?category_id=<?= $category_id ?>&delete_id=<?= $article['id'] ?>')">
+                                    onclick="event.preventDefault(); openDeleteModal2('<?= htmlspecialchars(addslashes($article['title'])) ?>', '<?= $article['id'] ?>', '<?= $category_id ?>')">
                                     <i class="fas fa-trash"></i> 删除
                                 </button>
 

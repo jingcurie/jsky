@@ -2,14 +2,14 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once __DIR__ . '/../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
+
+if (!isLoggedIn()) {
+    redirect('/admin/login.php');
+}
 
 try {
     $conn = new PDO(
@@ -144,10 +144,22 @@ $stats = get_dashboard_stats();
                     </div>
                 </div>
 
-                <div class="card p-3">
-                    <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>访问分析</h6>
-                    <div class="chart-container" style="position: relative; height:300px;">
-                        <canvas id="visitAnalysisChart"></canvas>
+                <div class="row g-4">
+                    <div class="col-lg-6 ">
+                        <div class="card p-3">
+                            <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>访问分析</h6>
+                            <div class="chart-container" style="position: relative; height:300px;">
+                                <canvas id="visitAnalysisChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 新增：每小时访问量图表（添加在这里！） -->
+                    <div class="col-lg-6 ">
+                        <div class="card p-3"> <!-- mt-4 是上边距，避免紧贴上方卡片 -->
+                            <h6 class="mb-3"><i class="fas fa-clock me-2"></i>每小时访问量</h6>
+                            <canvas id="hourlyVisitChart" height="300"></canvas> <!-- 固定高度避免过大 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -171,11 +183,7 @@ $stats = get_dashboard_stats();
                     </ul>
                 </div>
 
-                <!-- 新增：每小时访问量图表（添加在这里！） -->
-                <div class="card p-3 mt-4"> <!-- mt-4 是上边距，避免紧贴上方卡片 -->
-                    <h6 class="mb-3"><i class="fas fa-clock me-2"></i>每小时访问量</h6>
-                    <canvas id="hourlyVisitChart" height="250"></canvas> <!-- 固定高度避免过大 -->
-                </div>
+
             </div>
         </div>
     </div>

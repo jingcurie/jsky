@@ -4,16 +4,18 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
-isLoggedIn(true); // 未登录重定向
+if (!isLoggedIn()) {
+    redirect('/admin/login.php');
+}
 
 // 删除角色操作
-if (isset($_GET['delete_id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     // 查询角色名称
-    $roleToDelete = getById($conn, 'roles', 'role_id', $_GET['delete_id']);
+    $roleToDelete = getById($conn, 'roles', 'role_id', $_POST['delete_id']);
     if ($roleToDelete && !in_array(strtolower($roleToDelete['role_name']), ['admin', 'editor'])) {
-        $success = delete($conn, 'roles', 'role_id', $_GET['delete_id']);
+        $success = delete($conn, 'roles', 'role_id', $_POST['delete_id']);
         if ($success) {
-            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '角色管理', $_GET['delete_id'], $roleToDelete["role_name"]);
+            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '角色管理', $_POST['delete_id'], $roleToDelete["role_name"]);
             redirect('roles.php');
         } else {
             $error = '删除失败，请重试';
@@ -57,34 +59,40 @@ $roles = getAll($conn, 'roles');
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th>序号</th>
                     <th>角色名称</th>
                     <th>描述</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
-                    <?php 
-                        $count = 0;
-                        foreach ($roles as $role):
-                        $roleNameLower = strtolower($role['role_name']);
-                        $canDelete = !in_array($roleNameLower, ['admin', 'editor']);
-                        $count++;
-                    ?>
-                        <tr>
-                            <td><?= $count ?></td>
-                            <td><?= htmlspecialchars($role['role_name']) ?></td>
-                            <td><?= htmlspecialchars($role['role_desc']) ?></td>
-                            <td style="text-align:left;">
-                                <a href="role_form.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-edit">
-                                    <i class="fas fa-edit"></i> 编辑
-                                </a>
-                                <a href="role_modules.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-task">
-                                    <i class="fas fa-tasks"></i> 分配模块
+                <?php
+                $count = 0;
+                foreach ($roles as $role):
+                    $roleNameLower = strtolower($role['role_name']);
+                    $canDelete = !in_array($roleNameLower, ['admin', 'editor']);
+                    $count++;
+                ?>
+                    <tr>
+                        <td><?= $count ?></td>
+                        <td><?= htmlspecialchars($role['role_name']) ?></td>
+                        <td><?= htmlspecialchars($role['role_desc']) ?></td>
+                        <td style="text-align:left;">
+                            <a href="role_form.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-edit">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <a href="role_modules.php?role_id=<?= $role['role_id'] ?>" class="btn btn-sm btn-task">
+                                <i class="fas fa-tasks"></i> 分配模块
                             </a>
 
-                            <button class="btn btn-sm btn-delete <?= $canDelete ? '' : 'disabled' ?>"
+                            <!-- <button class="btn btn-sm btn-delete <?= $canDelete ? '' : 'disabled' ?>"
                                 <?= $canDelete ? "onclick=\"openDeleteModal('" . htmlspecialchars($role['role_name']) . "', 'roles.php?delete_id={$role['role_id']}')\"" : '' ?>
+                                title="<?= $canDelete ? '删除该角色' : '此角色不可删除' ?>">
+                                <i class="fas fa-trash"></i> 删除
+                            </button> -->
+
+                            <button class="btn btn-sm btn-delete <?= $canDelete ? '' : 'disabled' ?>"
+                                <?= $canDelete ? "onclick=\"openDeleteModal('" . htmlspecialchars($role['role_name']) . "', {$role['role_id']})\"" : '' ?>
                                 title="<?= $canDelete ? '删除该角色' : '此角色不可删除' ?>">
                                 <i class="fas fa-trash"></i> 删除
                             </button>

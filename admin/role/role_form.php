@@ -7,8 +7,10 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 $role_id = $_GET['role_id'] ?? null;
@@ -108,6 +110,7 @@ $readonly = in_array(strtolower($role_name), ['admin', 'editor']);
     <?php endif; ?>
 
     <form method="POST">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
         <div class="mb-3">
             <label for="role_name" class="form-label"><i class="fas fa-id-badge"></i> 角色名称</label>
             <input type="text" class="form-control" id="role_name" name="role_name"

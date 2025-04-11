@@ -4,6 +4,10 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
+if (!isLoggedIn()) {
+    redirect('/admin/login.php');
+}
+
 // 文件缓存配置
 $cache_dir = __DIR__ . '/../cache/';
 $cache_file = $cache_dir . 'visit_stats_' . date('Y-m-d') . '.json';

@@ -4,8 +4,10 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 初始化变量
@@ -82,9 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?php echo $category_id ? '编辑分类' : '创建分类'; ?></title>
 
     <!-- Bootstrap & FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -140,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" action="">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
             <div class="mb-3">
                 <label for="category_name" class="form-label"><i class="fas fa-tag"></i> 分类名称</label>
                 <input type="text" class="form-control" id="category_name" name="name" placeholder="输入分类名称"

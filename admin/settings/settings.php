@@ -5,7 +5,7 @@ require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 初始化变量

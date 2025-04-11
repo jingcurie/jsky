@@ -43,11 +43,10 @@ $conn->prepare("UPDATE articles SET view_count = view_count + 1 WHERE id = ?")->
         <i class="fas fa-chevron-right"></i>
 
         <!-- 一级菜单 -->
-   
             <a href="/pages/showSubMenuPage.php?article_category_id=<?= $article["category_id"] ?>&menu_id=<?= $article["menu_id"] ?>">
-            <?= htmlspecialchars($article['name']) ?>
+           <?= htmlspecialchars($article['name']) ?>
             </a>
-            <i class="fas fa-chevron-right"></i>
+             <i class="fas fa-chevron-right"></i>
      
 
         <!-- 分类名称（如果有） -->

@@ -1,11 +1,26 @@
-function openDeleteModal(name, deleteUrl) {
-    const modalElement = document.getElementById('deleteModal');
-    document.getElementById('deleteItemName').textContent = name;
-    document.getElementById('confirmDeleteLink').href = deleteUrl;
-    // 显示模态框
-    const deleteModal = new bootstrap.Modal(modalElement);
-    deleteModal.show();
+// function openDeleteModal(name, deleteUrl) {
+//     const modalElement = document.getElementById('deleteModal');
+//     document.getElementById('deleteItemName').textContent = name;
+//     document.getElementById('confirmDeleteLink').href = deleteUrl;
+//     // 显示模态框
+//     const deleteModal = new bootstrap.Modal(modalElement);
+//     deleteModal.show();
 
+// }
+
+function openDeleteModal(name, id) {
+    document.getElementById('deleteItemName').textContent = name;
+    document.getElementById('deleteItemId').value = id;
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+function openDeleteModal2(name, id, categoryId) {
+    document.getElementById('deleteItemName').textContent = name;
+    document.getElementById('deleteItemId').value = id;
+    document.getElementById('categoryItemId').value = categoryId;
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
 }
 
 // 批量删除功能

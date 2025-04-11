@@ -4,12 +4,8 @@ require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 $user_id = $_SESSION['user_id'];

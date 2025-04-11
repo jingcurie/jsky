@@ -7,6 +7,8 @@ require_once INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
+csrfProtect();
+
 $article_id = isset($_POST['id'])?$_POST['id']:"";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

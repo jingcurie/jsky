@@ -3,15 +3,16 @@ require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
+
 if (!isLoggedIn()) {
-    redirect('login.php');
+    redirect('/admin/login.php');
 }
 
 // 删除模块
-if (isset($_GET['delete_id'])) {
-    $module = getById($conn, "modules", "module_id", $_GET['delete_id']);
-    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '模块管理', $_GET['delete_id'], $module["module_name"]);
-    $success= delete($conn, 'modules', 'module_id', $_GET['delete_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
+    $module = getById($conn, "modules", "module_id", $_POST['delete_id']);
+    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '删除', '模块管理', $_POST['delete_id'], $module["module_name"]);
+    $success= delete($conn, 'modules', 'module_id', $_POST['delete_id']);
     if ($success) {
         redirect('modules.php');
     } else {
@@ -75,7 +76,7 @@ $modules = query($conn, "SELECT * FROM modules ORDER BY module_order ASC");
                             <a href="module_form.php?module_id=<?php echo $module['module_id']; ?>"
                                 class="btn btn-edit btn-sm"><i class="fas fa-edit"></i> 编辑</a>
                             <button class="btn btn-delete btn-sm"
-                                onclick="openDeleteModal('<?php echo htmlspecialchars($module['module_name']); ?>', 'modules.php?delete_id=<?= $module['module_id'] ?>')">
+                                onclick="openDeleteModal('<?php echo htmlspecialchars($module['module_name']); ?>', '<?= $module['module_id'] ?>')">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
                         </td>
