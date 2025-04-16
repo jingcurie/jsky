@@ -1,23 +1,24 @@
 <script>
-if (window.top !== window.self) {
-  // 当前在 iframe 中，跳转顶层
-  window.top.location = window.location.href;
-}
+    if (window.top !== window.self) {
+        window.top.location = window.location.href;
+    }
 </script>
 
 <?php
+session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
-require INCLUDE_PATH . '/functions.php';
+require_once INCLUDE_PATH . '/functions.php';
 
-// 记住我功能,如果存在，自动跳转
+// 自动登录（记住我）
 if (isset($_COOKIE['remember_me'])) {
     $token = $_COOKIE['remember_me'];
-    $sql = "SELECT * FROM users WHERE remember_token = :token";
+    $sql = "SELECT * FROM users WHERE remember_token = :token AND is_deleted = 0";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(':token', $token);
     $stmt->execute();
@@ -27,74 +28,81 @@ if (isset($_COOKIE['remember_me'])) {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role_id'] = $user['role_id'];
-        header("Location: index.php"); // 自动跳转到管理面板
+        header("Location: index.php");
         exit;
     }
 }
 
-// 初始化变量
 $username = '';
 $error = '';
 
-// 处理登录请求
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $captcha = $_POST['captcha'] ?? '';
     $remember_me = isset($_POST['remember_me']);
 
-    $sql = "SELECT * FROM users WHERE username = :username";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':username', $username);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user && password_verify($password, $user['password_hash'])) {
-        $_SESSION['user_id'] = $user['user_id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role_id'] = $user['role_id']; // 存储 role_id
-
-        // 写入登录成功日志
-        log_login($conn, $user['user_id'], $user['username'], 1, '登录成功');
-
-        if ($user['must_change_password']) {
-            header("Location: change_password.php");
-            exit;
-        }
-
-        // 记住我功能
-        if ($remember_me) {
-            $token = bin2hex(random_bytes(32));
-            $expiry = time() + 60 * 60 * 24 * 30; // 30 天
-            setcookie('remember_me', $token, $expiry, '/');
-
-            $sql = "UPDATE users SET remember_token = :token WHERE user_id = :user_id";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':token', $token);
-            $stmt->bindParam(':user_id', $user['user_id']);
-            $stmt->execute();
-        }
-        // 写入登录成功日志
-        log_login($conn, $user['user_id'], $user['username'], 1, '登录成功');
-        header("Location: index.php"); // 登录成功后跳转
-        exit;
+    if (!isset($_SESSION['captcha']) || strtoupper($captcha) !== $_SESSION['captcha']) {
+        $error = "验证码错误，请重新输入";
+        log_login($conn, 0, $username, 0, '登录失败：验证码错误');
     } else {
-        $error = "用户名不存在或密码有误，请核实.";
+        $sql = "SELECT * FROM users WHERE username = :username";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':username', $username);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // ✅ 写入登录失败日志（注意：user_id 使用 0 或 null）
-        log_login($conn, 0, $username, 0, '登录失败：用户名或密码错误');
+        if ($user) {
+            if ($user['is_deleted'] == 1) {
+                $error = "该账号已被禁用，请联系管理员。";
+                log_login($conn, 0, $username, 0, '登录失败：账号已被禁用');
+            } elseif (!password_verify($password, $user['password_hash'])) {
+                $error = "用户名或密码错误，请重试。";
+                log_login($conn, 0, $username, 0, '登录失败：密码错误');
+            } else {
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role_id'] = $user['role_id'];
+
+                log_login($conn, $user['user_id'], $user['username'], 1, '登录成功');
+
+                if ($user['must_change_password']) {
+                    header("Location: change_password.php");
+                    exit;
+                }
+
+                if ($remember_me) {
+                    $token = bin2hex(random_bytes(32));
+                    $expiry = time() + 60 * 60 * 24 * 30;
+                    setcookie('remember_me', $token, $expiry, '/');
+
+                    $sql = "UPDATE users SET remember_token = :token WHERE user_id = :user_id";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':token', $token);
+                    $stmt->bindParam(':user_id', $user['user_id']);
+                    $stmt->execute();
+                }
+
+                unset($_SESSION['captcha']);
+                header("Location: index.php");
+                exit;
+            }
+        } else {
+            $error = "用户名或密码错误，请重试。";
+            log_login($conn, 0, $username, 0, '登录失败：用户不存在');
+        }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>用户登录</title>
     <style>
-        /* 全局样式 */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #0569c1;
@@ -105,30 +113,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin: 0;
         }
 
-        /* 登录框样式 */
         .login-container {
             background: #fff;
-            /* padding: 2rem; */
-            max-width:800px;
+            max-width: 800px;
             text-align: center;
-            display:grid;
+            display: grid;
             grid-template-columns: 1fr 1fr;
-            /* border-radius: 10px; */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .login-image-section, .login-section{
-            padding:2rem;
+        .login-image-section,
+        .login-section {
+            padding: 2rem;
         }
 
-        .login-image-section{
-            background-color:#f4f9fe;
+        .login-image-section {
+            background-color: #f4f9fe;
             display: flex;
             align-items: center;
         }
 
-        .login-container img{
-            width:100%;
+        .login-container img {
+            width: 100%;
         }
 
         .login-container h2 {
@@ -170,25 +176,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             margin: 1rem 0;
+            margin-left: 1.5rem;
         }
 
         .remember-me input {
             width: auto;
             margin-right: 0.5rem;
-        }
-
-        .register-link {
-            margin-top: 1rem;
-            color: #666;
-        }
-
-        .register-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .register-link a:hover {
-            text-decoration: underline;
         }
 
         .error {
@@ -197,29 +190,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-section">
-            <h2>用户登陆</h2>
+            <h2>用户登录</h2>
             <?php if (isset($error)): ?>
-                <div class="error"><?php echo $error; ?></div>
+                <div class="error"><?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
             <form method="POST" action="">
                 <input type="text" name="username" placeholder="用户名" required>
                 <input type="password" name="password" placeholder="密码" required>
+                <input type="text" name="captcha" placeholder="请输入验证码" required>
+                <div style="margin: 0.5rem auto; text-align:center; width:90%;">
+                    <img src="captcha.php" alt="验证码" onclick="this.src='captcha.php?'+Math.random()" style="width:100%; cursor:pointer; border:1px solid #ccc;border-radius:5px">
+                </div>
                 <div class="remember-me">
                     <input type="checkbox" name="remember_me" id="remember_me">
                     <label for="remember_me">记住我</label>
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit">登陆</button>
             </form>
-            <div class="register-link">
-                如果您还不是一个注册用户， 点击<a href="register.php">注册</a>.
-            </div>
         </div>
         <div class="login-image-section">
             <img src="../assets/images/login.jpg" alt="登陆配图">
         </div>
     </div>
 </body>
+
 </html>

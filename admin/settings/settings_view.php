@@ -77,6 +77,10 @@
                     <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">联系方式</button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ip-tab" data-bs-toggle="tab" data-bs-target="#ip-whitelist" type="button" role="tab">IP白名单</button>
+                </li>
+
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">性能设置</button>
                 </li>
             </ul>
@@ -97,15 +101,15 @@
                                                                                                                 ?></textarea>
                     </div>
 
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="site_logo" class="form-label">网站LOGO</label>
                         <input type="file" class="form-control" id="site_logo" name="site_logo"
                             accept="image/jpeg, image/png, image/webp">
 
-                        <!-- 当前LOGO预览 -->
+                
                         <?php if (!empty($settings['site_logo'])): ?>
                             <div class="mt-2">
-                                <img src="<?= UPLOAD_URL ?>/<?= htmlspecialchars($settings['site_logo']) ?>"
+                                <img src="<?= LOGO_URL ?>/<?= htmlspecialchars($settings['site_logo']) ?>"
                                     class="img-thumbnail" style="max-height: 100px;">
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="checkbox"
@@ -114,9 +118,7 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-
-
-                    </div>
+                    </div> -->
                 </div>
 
                 <!-- 首页内容 -->
@@ -131,7 +133,7 @@
                                     </a>
 
                                     <button type="button" class="btn btn-sm btn-delete"
-                                        onclick="openDeleteModal('Banner', 'settings.php?delete_id=<?php echo $banner['id']; ?>')">
+                                        onclick="openDeleteModal2('Banner', '<?= $banner['id'] ?>', 'banner')">
                                         <i class="fas fa-trash">删除</i>
                                     </button>
                                 </div>
@@ -201,6 +203,44 @@
                     </div>
                 </div>
 
+                <!-- IP白名单设置 -->
+                <div class="tab-pane fade" id="ip-whitelist" role="tabpanel">
+                    <div class="mb-3">
+                        <label for="new_ip" class="form-label">添加IP地址</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="new_ip" name="new_ip" placeholder="例如：123.45.67.89">
+                            <button class="btn btn-outline-secondary" type="submit" name="add_ip"><i class="fas fa-plus"></i> 添加</button>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($whitelisted_ips)): ?>
+                        <h5>已允许的IP地址</h5>
+                        <ul class="list-group">
+                            <?php foreach ($whitelisted_ips as $ip): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <?php echo htmlspecialchars($ip["ip_address"]) . "  " .  $ip['id'] ?>
+                                    <!-- <a href="?delete_id=<?= urlencode($ip["id"]) ?>" class="btn btn-sm btn-delete"
+                                        onclick="return confirm('确定要移除该IP地址吗？');">
+                                        <i class="fas fa-trash"></i>删除
+                                    </a> -->
+                                    <?php
+                                    $ip_label = 'IP地址: ' . $ip['ip_address'];
+                                    $ip_label_js = addslashes($ip_label); // 防止引号打断JS语法
+                                    $ip_id = $ip['id'];
+                                    ?>
+                                    <button type="button" class="btn btn-sm btn-delete"
+                                        onclick="openDeleteModal2('<?= $ip_label_js ?>', '<?= htmlspecialchars($ip_id) ?>','whitelist')">
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php else: ?>
+                        <p class="text-muted">当前未设置任何IP白名单。</p>
+                    <?php endif; ?>
+                </div>
+
+
                 <!-- 性能设置 -->
                 <div class="tab-pane fade" id="performance" role="tabpanel">
                     <div class="mb-3 form-check">
@@ -229,13 +269,17 @@
     <?php require INCLUDE_PATH . '/delete_modal.php'; ?>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
     <script src="<?= JS_URL ?>/admin.js"></script>
 
     <script>
         // 根据哈希值激活对应标签页
         if (window.location.hash === '#home') {
             new bootstrap.Tab(document.getElementById('home-tab')).show();
+        }
+
+        if (window.location.hash === '#whitelist') {
+            new bootstrap.Tab(document.getElementById('ip-tab')).show();
         }
 
         function clearCache() {

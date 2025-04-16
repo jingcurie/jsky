@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>内容管理 - 列表页</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet" />
+  <style>
+    .card {
+  border: none;
+  border-radius: 12px;
+}
+
+.table > thead > tr > th {
+  font-weight: 600;
+}
+
+.btn-outline-primary, .btn-outline-danger {
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+</style>
+</head>
+<body class="bg-light text-dark">
+  <div class="container-fluid p-4">
+    <!-- 标题 & 面包屑 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2>文章管理</h2>
+        <small class="text-muted">内容中心 / 文章列表</small>
+      </div>
+      <button class="btn btn-primary">➕ 新建文章</button>
+    </div>
+
+    <!-- 筛选栏 -->
+    <div class="card shadow-sm p-3 mb-4">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="关键词搜索...">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select">
+            <option>全部状态</option>
+            <option>已发布</option>
+            <option>草稿</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-outline-secondary w-100">🔍 查询</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 列表表格 -->
+    <div class="card shadow-sm">
+      <div class="card-body table-responsive">
+        <table class="table align-middle table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>标题</th>
+              <th>分类</th>
+              <th>状态</th>
+              <th>作者</th>
+              <th>发布时间</th>
+              <th class="text-end">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>后台UI设计指南</td>
+              <td>设计</td>
+              <td><span class="badge bg-success">已发布</span></td>
+              <td>Admin</td>
+              <td>2025-04-10</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                <button class="btn btn-sm btn-outline-danger">删除</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>PHP 安全实践</td>
+              <td>开发</td>
+              <td><span class="badge bg-secondary">草稿</span></td>
+              <td>Editor</td>
+              <td>2025-04-08</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary">编辑</button>
+                <button class="btn btn-sm btn-outline-danger">删除</button>
+              </td>
+            </tr>
+            <!-- 可继续添加更多行 -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 分页 -->
+      <div class="card-footer bg-white d-flex justify-content-end">
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item disabled"><a class="page-link" href="#">«</a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">»</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

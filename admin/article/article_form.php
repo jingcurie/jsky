@@ -1,9 +1,10 @@
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 require_once __DIR__ . '/../../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
@@ -13,43 +14,44 @@ if (!isLoggedIn()) {
     redirect('login.php');
 }
 
-if (isset($_GET['category_id'])) {
-    $category_id = intval($_GET['category_id']);
-}
-
-// 获取所有分类
-// $categories = $conn->query("SELECT * FROM categories")->fetchAll(PDO::FETCH_ASSOC);
-// $category_id = $article['category_id'] ?? ''; // 如果是编辑模式，则获取文章的分类ID
-
-
-// 获取文章 ID
 $article_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$category_id = isset($_GET['category_id']) ? intval($_GET['category_id']) : 0;
+
 $title = "";
 $content = "";
 $author = "";
 $created_at = "";
-
-$cover_image = ""; // 默认值，避免未定义
+$cover_image = "";
 $category_name = "";
+$status = "draft";
 
-if ($category_id > 0){
+// 获取分类
+if ($category_id > 0) {
     $category = getById($conn, "categories", "id", $category_id);
+
+    if (!$category || $category['is_deleted'] == 1) {
+        system_message('无法操作：所属分类已被删除或不存在！', 'danger', '操作异常', 'fas fa-ban');
+    }
+
     $category_name = $category["name"];
+} else {
+    die("缺少必要的 category_id 参数。");
 }
 
-// 如果是编辑模式，获取文章数据
+// 获取文章
 if ($article_id > 0) {
     $article = getById($conn, "articles", "id", $article_id);
 
-    if ($article) {
-        $title = $article['title'];
-        $content = $article['content'];
-        $author = $article['author'];
-        $created_at = $article['created_at'];
-        $cover_image = $article['cover_image'];
-        $status = $article['status'] ?? 'draft'; // 新增状态字段
+    if (!$article || $article['is_deleted'] == 1) {
+        system_message('无法编辑：该文章已被删除或不存在！', 'danger', '操作异常', 'fas fa-ban');
     }
 
+    $title = $article['title'];
+    $content = $article['content'];
+    $author = $article['author'];
+    $created_at = $article['created_at'];
+    $cover_image = $article['cover_image'];
+    $status = $article['status'] ?? 'draft';
 }
 ?>
 
@@ -394,7 +396,7 @@ if ($article_id > 0) {
     <div id="alert-container" class="position-fixed top-50 start-50 translate-middle-x" style="z-index: 1050;"></div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

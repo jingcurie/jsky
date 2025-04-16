@@ -42,7 +42,7 @@ function csrfProtect(): void
         $token = $_POST['csrf_token'] ?? '';
         if (!validateCsrfToken($token)) {
             header('HTTP/1.1 403 Forbidden');
-            die('安全验证失败，请刷新页面后重试');
+            system_message('安全验证失败，请刷新页面后重试', 'danger', '操作异常', 'fas fa-ban');
         }
     }
 }

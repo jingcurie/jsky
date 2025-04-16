@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/../../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 

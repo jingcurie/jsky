@@ -1,6 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 

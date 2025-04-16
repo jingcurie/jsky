@@ -4,6 +4,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
@@ -11,55 +12,46 @@ if (!isLoggedIn()) {
     redirect('/admin/login.php');
 }
 
-try {
-    $conn = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
-        DB_USER,
-        DB_PASSWORD
-    );
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
-
 // 获取文章统计数据
 function get_dashboard_stats()
 {
     global $conn;
 
+    // 基础统计（已排除软删除）
     $stmt = $conn->query("
         SELECT 
-            (SELECT COUNT(*) FROM articles) as articles_count,
-            (SELECT COUNT(*) FROM users) as users_count,
-            (SELECT SUM(view_count) FROM articles) as total_views,
-            (SELECT COUNT(*) FROM articles WHERE status = 'draft') as pending_articles
+            (SELECT COUNT(*) FROM articles WHERE is_deleted = 0) as articles_count,
+            (SELECT COUNT(*) FROM users WHERE is_deleted = 0) as users_count,
+            (SELECT IFNULL(SUM(view_count), 0) FROM articles WHERE is_deleted = 0) as total_views,
+            (SELECT COUNT(*) FROM articles WHERE status = 'draft' AND is_deleted = 0) as pending_articles
     ");
     $basic_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // 获取文章分类统计
+    // 文章分类统计（仅统计已发布且未删除）
     $stmt = $conn->query("
         SELECT c.name AS category_name, COUNT(a.id) AS article_count
         FROM articles a
         LEFT JOIN categories c ON a.category_id = c.id
-        WHERE a.status = 'published'
+        WHERE a.status = 'published' AND a.is_deleted = 0
         GROUP BY c.name
     ");
     $article_categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 获取热门文章
+    // 热门文章（未删除）
     $stmt = $conn->query("
         SELECT title, view_count 
         FROM articles 
+        WHERE is_deleted = 0
         ORDER BY view_count DESC 
         LIMIT 5
     ");
     $top_articles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // 获取浏览趋势
+    // 浏览趋势图（未删除）
     $stmt = $conn->prepare("
         SELECT SUM(view_count) as views, DATE(created_at) as date 
         FROM articles 
-        WHERE created_at >= ? 
+        WHERE created_at >= ? AND is_deleted = 0
         GROUP BY date 
         ORDER BY date ASC
     ");
@@ -177,7 +169,7 @@ $stats = get_dashboard_stats();
                         <?php foreach ($stats['top_articles'] as $article): ?>
                             <li class="list-group-item d-flex justify-content-between">
                                 <span class="text-truncate" style="max-width: 70%;"><?= htmlspecialchars($article['title']) ?></span>
-                                <span class="badge bg-warning"><?= $article['view_count'] ?> 浏览</span>
+                                <span class=""><?= $article['view_count'] ?>次浏览</span>
                             </li>
                         <?php endforeach; ?>
                     </ul>

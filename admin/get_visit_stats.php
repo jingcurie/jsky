@@ -1,6 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -34,11 +36,11 @@ try {
  
     // 1. 获取基础统计（优化为单次查询）
     $stmt = $conn->query("
-        SELECT 
-            (SELECT COUNT(*) FROM visit_logs WHERE DATE(visited_at) = CURDATE()) as today_visits,
-            (SELECT COUNT(DISTINCT ip_address) FROM visit_logs WHERE DATE(visited_at) = CURDATE()) as unique_visitors,
-            (SELECT COUNT(*) FROM articles WHERE status = 'draft') as pending_articles
-    ");
+    SELECT 
+        (SELECT COUNT(*) FROM visit_logs WHERE DATE(visited_at) = CURDATE()) as today_visits,
+        (SELECT COUNT(DISTINCT ip_address) FROM visit_logs WHERE DATE(visited_at) = CURDATE()) as unique_visitors,
+        (SELECT COUNT(*) FROM articles WHERE status = 'draft' AND is_deleted = 0) as pending_articles
+");
     $basic_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
     // 2. 获取设备类型统计（关键修正）
@@ -59,7 +61,7 @@ try {
             DATE(visited_at) as date,
             COUNT(*) as count
         FROM visit_logs
-        WHERE visited_at >= DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+        WHERE visited_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
         GROUP BY device_type, date
         ORDER BY date DESC
     ");

@@ -4,9 +4,9 @@ body {
 }
 
 .logo{
-    width:30px;
-    height:30px;
-    margin-top:-0.2rem;
+    width:40px;
+    height:40px;
+    margin-top:-0.4rem;
 }
 
 .container, .container-fluid {
@@ -342,7 +342,7 @@ body {
     background: #007bff;
     border-top-left-radius: 50px;
     border-bottom-left-radius: 50px;
-    padding: 9px;
+    padding-left: 10px;
     margin-left:13px;
 }
 
@@ -462,7 +462,7 @@ iframe {
 .welcome-message {
     color: #f8f9fa;
     text-align: center;
-    margin-top:6px;
+    margin-top:0px;
     padding: 15px 20px;
     /* border-radius: 8px; */
     /* border-bottom: 1px solid #888888; */

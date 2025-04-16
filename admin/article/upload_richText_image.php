@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 // 依赖加载
 require_once __DIR__ . '/../../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 

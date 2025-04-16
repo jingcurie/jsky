@@ -216,7 +216,8 @@
           $("#menuName").val(menu.name);
           $("#menuUrl").val(menu.url);
           $("#menuSortOrder").val(menu.sort_order);
-          $("#menuActive").prop("checked", menu.is_active == 1);
+          $("#menuActive").prop("checked", parseInt(menu.is_active) === 1);
+
           $("#menuType").val(menu.menu_type); // 设置 menu_type
           $("#parentMenu").html('<option value="">无（顶级菜单）</option>');
 

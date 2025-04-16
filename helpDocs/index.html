@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>后台管理系统说明书</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css"
+    />
+    <!-- Docsify 样式美化 -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-themeable/dist/css/theme-simple.css"/>
+    <style>
+      :root {
+        --theme-color: #2c3e50;
+        --sidebar-width: 280px;
+        --sidebar-background: #f8f9fa;
+        --sidebar-nav-link-color: #333;
+        --sidebar-nav-link-active-color: #007bff;
+      }
+
+      .content {
+        font-size: 16px;
+        line-height: 1.8;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        border-left: 5px solid #007bff;
+        padding-left: 10px;
+        margin-top: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">加载中...</div>
+    <script>
+      window.$docsify = {
+        name: "锦山客运网站后台管理系统操作说明",
+        loadSidebar: true,
+        coverpage: false,
+        subMaxLevel: 2,
+      };
+    </script>
+    <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  </body>
+</html>

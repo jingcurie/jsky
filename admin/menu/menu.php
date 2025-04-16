@@ -1,6 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -17,7 +19,7 @@ if ($_GET['action'] === 'fetch') {
 }
 
 if ($_GET['action'] === 'categories') {
-    $categories = query($conn, "SELECT id, name FROM categories ORDER BY name");
+    $categories = query($conn, "SELECT id, name FROM categories WHERE is_deleted = 0 ORDER BY name");
     echo json_encode($categories);
     exit;
 }

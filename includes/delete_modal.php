@@ -8,7 +8,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                确定要删除 <strong id="deleteItemName"></strong> 吗？
+                确定要删除 <strong id="deleteItemName"></strong>？
                 <input type="hidden" name="delete_id" id="deleteItemId">
                 <input type="hidden" name="category_id" id="categoryItemId">
             </div>

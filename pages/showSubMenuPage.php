@@ -27,7 +27,7 @@ if ($menu_id) {
 // 获取文章信息（如果有 article_category_id）
 $articles = [];
 if ($article_category_id) {
-    $articles = query($conn, "SELECT * FROM articles WHERE category_id = ? and status = ? ORDER BY created_at DESC", [$article_category_id, "published"]);
+    $articles = query($conn, "SELECT * FROM articles WHERE category_id = ? and status = ? and is_deleted = 0 ORDER BY created_at DESC", [$article_category_id, "published"]);
 }
 ?>
 

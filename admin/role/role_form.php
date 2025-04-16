@@ -1,9 +1,11 @@
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -36,29 +38,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "角色名称不能为空。";
     } elseif (empty($role_desc)) {
         $error = "角色描述不能为空。";
-    } elseif (isFieldValueExists($conn, 'roles', 'role_name', $role_name, $role_id, 'role_id')) {
-        $error = "该角色名称已存在。";
     } else {
-        $data = [
-            'role_name' => $role_name,
-            'role_desc' => $role_desc
-        ];
-
+        // ✅ 检查角色名称是否重复（排除软删除）
         if ($role_id) {
-            $success = update($conn, 'roles', 'role_id', $role_id, $data);
-            if ($success) {
-                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '角色管理', $role_id, $data['role_name']);
-                redirect('roles.php');
-            } else {
-                $error = "更新角色失败。";
-            }
+            $check = query($conn, "SELECT COUNT(*) AS cnt FROM roles WHERE role_name = ? AND role_id != ? AND is_deleted = 0", [$role_name, $role_id]);
         } else {
-            $success = insert($conn, 'roles', $data);
-            if ($success) {
-                log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '角色管理', $id, $data['role_name']);
-                redirect('roles.php');
+            $check = query($conn, "SELECT COUNT(*) AS cnt FROM roles WHERE role_name = ? AND is_deleted = 0", [$role_name]);
+        }
+
+        if ($check[0]['cnt'] > 0) {
+            $error = "该角色名称已存在。";
+        } else {
+            $data = [
+                'role_name' => $role_name,
+                'role_desc' => $role_desc
+            ];
+
+            if ($role_id) {
+                $success = update($conn, 'roles', 'role_id', $role_id, $data);
+                if ($success) {
+                    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '角色管理', $role_id, $data['role_name']);
+                    redirect('roles.php');
+                } else {
+                    $error = "更新角色失败。";
+                }
             } else {
-                $error = "创建角色失败。";
+                $success = insert($conn, 'roles', $data);
+                if ($success) {
+                    log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '角色管理', null, $data['role_name']);
+                    redirect('roles.php');
+                } else {
+                    $error = "创建角色失败。";
+                }
             }
         }
     }
@@ -135,6 +146,6 @@ $readonly = in_array(strtolower($role_name), ['admin', 'editor']);
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

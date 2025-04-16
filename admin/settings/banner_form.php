@@ -1,3 +1,4 @@
+
 <?php
 // 错误报告设置（开发环境）
 // error_reporting(E_ALL);          // 报告所有PHP错误
@@ -6,6 +7,7 @@
 
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -73,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!is_dir(BANNER_URL)) {
                 mkdir(BANNER_URL, 0755, true);
             }
-            
+        
             if (move_uploaded_file($_FILES['banner_image']['tmp_name'], $uploadPath)) {
                 // 如果是编辑模式，删除旧图片
                 if ($is_edit && !empty($banner['image_path']) && file_exists(BANNER_URL . '/' . $banner['image_path'])) {
@@ -217,6 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

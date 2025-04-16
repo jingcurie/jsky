@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../includes/config.php';
 require_once INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require_once INCLUDE_PATH . '/auth.php';
 require_once INCLUDE_PATH . '/functions.php';
 
@@ -19,14 +20,14 @@ $user_role_id = $_SESSION['role_id'] ?? null;
 $stmt = $conn->prepare("
     SELECT m.module_name, m.module_icon, m.module_url FROM role_permissions rp
     JOIN modules m ON rp.module_id = m.module_id
-    WHERE rp.role_id = ?
+    WHERE rp.role_id = ? AND m.is_deleted = 0
     ORDER BY m.module_order ASC
 ");
 $stmt->execute([$user_role_id]);
 $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 文章分类
-$category_stmt = $conn->query("SELECT id, name FROM categories ORDER BY name ASC");
+$category_stmt = $conn->query("SELECT id, name FROM categories WHERE is_deleted = 0 ORDER BY name ASC");
 $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -71,10 +72,6 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div id="current-time">2025-04-05</div>
             </div>
         </div>
-        <!-- 
-        <div class="toggle-btn" onclick="toggleSidebar()">
-            <i class="fas fa-bars"></i>
-        </div> -->
 
         <div class="menu-scroll">
             <ul class="menu list-unstyled">
@@ -99,6 +96,11 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                         </ul>
                     <?php endif; ?>
                 <?php endforeach; ?>
+                <li>
+                    <a href="/helpDocs/index.html" target="_blank">
+                        <i class="fas fa-question-circle"></i> 帮助中心
+                    </a>
+                </li>
                 <li><a href="logout.php" style="text-decoration:none;"><i
                             class="fas fa-right-from-bracket"></i><span>退出系统</span>
                     </a></li>
@@ -125,18 +127,6 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        // // 绑定菜单项点击事件
-        // document.querySelectorAll('.sidebar .menu li').forEach(item => {
-        //     item.addEventListener('click', function() {
-        //         // 切换子菜单显示
-        //         const submenu = this.querySelector('.category-list');
-        //         if (submenu) {
-        //             submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-        //             this.classList.toggle('active');
-        //         }
-        //     });
-        // });
-
         function loadPage(page, element) {
             let iframe = document.getElementById('mainFrame');
             iframe.src = page + '?t=' + new Date().getTime(); // 防缓存

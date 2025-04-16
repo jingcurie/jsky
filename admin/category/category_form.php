@@ -1,6 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -38,18 +40,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (empty($category_desc)) {
         $error = "分类描述不能为空！";
     } else {
-        // 检查分类名称是否已存在（排除自身）
-        if (isFieldValueExists($conn, 'categories', 'name', $category_name, $category_id)) {
-            $error = "该分类名称已存在！";
+        // ✅ 新增或编辑时，判断名称是否重复（排除被软删除的）
+        if ($category_id) {
+            // 编辑模式，排除自己
+            $check = query($conn, "SELECT COUNT(*) AS cnt FROM categories WHERE name = ? AND id != ? AND is_deleted = 0", [$category_name, $category_id]);
+        } else {
+            // 创建模式
+            $check = query($conn, "SELECT COUNT(*) AS cnt FROM categories WHERE name = ? AND is_deleted = 0", [$category_name]);
+        }
+
+        if ($check[0]['cnt'] > 0) {
+            $error = "该分类名称已存在，请更换！";
         } else {
             if ($category_id) {
-                // 编辑模式：更新分类
+                // 编辑分类
                 $data = [
                     'name' => $category_name,
                     'description' => $category_desc,
                 ];
                 if (update($conn, 'categories', 'id', $category_id, $data)) {
-                    // 记录日志
                     log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', '分类管理', $category_id, $category_name, '更新了分类');
                     header("Location: categories.php");
                     exit;
@@ -57,13 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = "更新失败，请重试！";
                 }
             } else {
-                // 创建模式：插入新分类
+                // 新建分类
                 $data = [
                     'name' => $category_name,
                     'description' => $category_desc,
                 ];
                 if (insert($conn, 'categories', $data)) {
-                    // 记录日志
                     log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '创建', '分类管理', null, $category_name, '创建了新分类');
                     header("Location: categories.php");
                     exit;
@@ -167,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/assets/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

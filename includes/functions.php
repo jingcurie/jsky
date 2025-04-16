@@ -288,3 +288,99 @@ function log_login($pdo, $user_id, $username, $status, $msg = null) {
 //     }
 //     return '未知位置';
 // }
+
+function renderTable($data, $headers, $idField, $actions = null) {
+    echo '<table class="table table-bordered table-hover">';
+    echo '<thead><tr>';
+    echo '<th>#</th>';
+    foreach ($headers as $field => $title) {
+        echo "<th>{$title}</th>";
+    }
+    echo '<th>操作</th>';
+    echo '</tr></thead>';
+    echo '<tbody>';
+
+    $count = 0;
+    foreach ($data as $row) {
+        $count++;
+        echo '<tr>';
+        echo "<td>{$count}</td>";
+
+        foreach ($headers as $field => $title) {
+            $value = isset($row[$field]) ? htmlspecialchars($row[$field]) : '';
+            echo "<td>{$value}</td>";
+        }
+
+        // 操作列
+        echo '<td>';
+        if ($actions) {
+            foreach ($actions as $action) {
+                if ($action['type'] === 'link') {
+                    // 普通链接操作
+                    $url = "{$action['url']}?id={$row[$idField]}";
+                    echo "<a href='{$url}' class='btn btn-sm {$action['class']}'><i class='{$action['icon']}'></i> {$action['label']}</a> ";
+                } elseif ($action['type'] === 'js') {
+                    // JS 调用形式
+                    $jsFunc = $action['js_func'];
+                    $label = $action['label'];
+                    $icon = $action['icon'];
+                    $btnClass = $action['class'];
+                    $args = array_map(function($argKey) use ($row) {
+                        return isset($row[$argKey]) ? htmlspecialchars($row[$argKey]) : '';
+                    }, $action['js_args']);
+                    $jsArgsStr = implode("','", $args);
+
+                    echo "<button class='btn btn-sm {$btnClass}' onclick=\"{$jsFunc}('{$jsArgsStr}')\">";
+                    echo "<i class='{$icon}'></i> {$label}</button> ";
+                }
+            }
+        }
+        echo '</td>';
+        echo '</tr>';
+    }
+
+    echo '</tbody>';
+    echo '</table>';
+}
+
+function system_message(string $message = '提示内容', string $type = 'danger', string $title = '系统提示', string $icon = 'fas fa-info-circle') {
+    die('
+    <!DOCTYPE html>
+    <html lang="zh">
+    <head>
+        <meta charset="UTF-8">
+        <title>' . htmlspecialchars($title) . '</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/assets/css/all.min.css" rel="stylesheet">
+        <style>
+            body { background-color: #f8f9fa; }
+            .msg-card {
+                max-width: 460px;
+                margin: auto;
+                margin-top: 12vh;
+                padding: 2rem;
+                border-radius: 10px;
+                background: #fff;
+                box-shadow: 0 0 10px rgba(0,0,0,0.05);
+                text-align: center;
+            }
+            .msg-icon {
+                font-size: 3rem;
+                color: var(--bs-' . $type . ');
+            }
+        </style>
+    </head>
+    <body>
+        <div class="msg-card">
+            <div class="msg-icon mb-3">
+                <i class="' . htmlspecialchars($icon) . ' text-' . $type . '"></i>
+            </div>
+            <h4 class="text-' . $type . '">' . htmlspecialchars($title) . '</h4>
+            <p class="text-muted mb-4">' . htmlspecialchars($message) . '</p>
+            
+        </div>
+    </body>
+    </html>');
+}
+

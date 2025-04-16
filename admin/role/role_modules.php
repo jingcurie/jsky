@@ -1,6 +1,8 @@
+
 <?php
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
+require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
 require INCLUDE_PATH . '/functions.php';
 
@@ -23,7 +25,7 @@ if (!$role) {
 $role_name = strtolower($role['role_name']);
 
 // 获取所有模块
-$modules = getAll($conn, 'modules');
+$modules = query($conn, "SELECT * FROM modules WHERE is_deleted = 0 ORDER BY module_order ASC");
 
 // 获取当前角色的已分配模块
 $sql = "SELECT module_id FROM role_permissions WHERE role_id = ?";
@@ -161,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generateCsrfToken()) ?>">
             <div class="module-list">
                 <?php foreach ($modules as $module): ?>
                     <?php

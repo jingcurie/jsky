@@ -6,11 +6,13 @@ define('INCLUDE_PATH', __DIR__); //获得一个父亲路径
 define('UPLOAD_PATH', __DIR__ . '/../uploads');
 define('BANNER_PATH', UPLOAD_PATH . '/banners/');
 define('ARTICLE_PATH', UPLOAD_PATH . '/articles/');
+define('LOGO_PATH', UPLOAD_PATH . '/logos/');
 
 //相对URL
 define('UPLOAD_URL','/uploads');
 define('BANNER_URL', UPLOAD_URL . '/banners/');
 define('ARTICLE_URL', UPLOAD_URL . '/articles/');
+define('LOGO_URL', UPLOAD_URL . '/Logos/');
 
 define('IMG_URL', '/assets/images');
 define('CSS_URL', '/assets/css');

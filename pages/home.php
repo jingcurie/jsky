@@ -44,7 +44,7 @@ if (!isset($_SESSION['device_logged'])) {
         <div class="routes">
             <h2>线路查询</h2>
             <p>提供丰富的公交线路信息，满足您的出行需求。</p>
-            <p>提供丰富的公交线路信息，满足您的。</p>
+            <p>快速查看本地公交线路详情，包含运行方向、站点列表等信息，帮助您高效规划每一次出行</p>
             <div class="button">
                 <a href="bus_line_search_form.php">查看线路</a>
             </div>
@@ -54,7 +54,7 @@ if (!isset($_SESSION['device_logged'])) {
         //require "includes/db.php";
         //var_dump($conn);
         // 查询分类为 1 的最新一篇文章
-        $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 1 and status = 'published' ORDER BY created_at DESC LIMIT 1";
+        $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 1 and status = 'published' and is_deleted = 0 ORDER BY created_at DESC LIMIT 1";
         $stmt = $conn->query($sql);
         // 获取查询结果
         $article = $stmt->fetch(PDO::FETCH_ASSOC); // fetch() 只获取一行数据
@@ -104,7 +104,7 @@ if (!isset($_SESSION['device_logged'])) {
 
     <?php
     // 查询分类为 2 的最新 4 篇文章
-    $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 2 and status = 'published' ORDER BY created_at DESC LIMIT 4";
+    $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 2 and status = 'published' and is_deleted = 0 ORDER BY created_at DESC LIMIT 4";
     $stmt = $conn->query($sql);
     $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC); // 获取所有符合条件的文章
 

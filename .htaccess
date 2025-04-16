@@ -1,0 +1,26 @@
+# 开启 Rewrite 引擎
+RewriteEngine On
+
+# 🔥 非常重要：反向代理路径排除 rewrite（优先！）
+RewriteCond %{REQUEST_URI} ^/(weChat/pay|cct/staticHtml) [NC]
+RewriteRule ^ - [L]
+
+# 隐藏 .php 后缀（已注释，不启用）
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# 如果请求的不是文件也不是目录，就转发给 index.php（已注释）
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php [L]
+
+# 禁止访问敏感文件（已注释）
+<FilesMatch "\.(env|sql|ini|log|sh|bak)$">
+     Require all denied
+</FilesMatch>
+
+# 关闭目录浏览
+Options -Indexes
+
+# 自定义 404 页面（已注释）
+# ErrorDocument 404 /404.html
