@@ -94,6 +94,7 @@ if (isset($_GET['module_id'])) {
 
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -127,6 +128,7 @@ if (isset($_GET['module_id'])) {
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -152,7 +154,10 @@ if (isset($_GET['module_id'])) {
 
             <div class="form-group mb-3">
                 <label for="module_icon"><i class="fas fa-icons"></i> 图标（FontAwesome 类名）</label>
-                <input type="text" id="module_icon" name="module_icon" class="form-control" placeholder="fas fa-cube" value="<?= htmlspecialchars($module_icon); ?>">
+                <div class="input-group">
+                    <input type="text" id="module_icon" name="module_icon" class="form-control" placeholder="fas fa-cube" value="<?= htmlspecialchars($module_icon); ?>">
+                    <button class="btn btn-outline-secondary" type="button" onclick="showIconPicker()">选择图标</button>
+                </div>
                 <small class="text-muted">示例：fas fa-cog，fas fa-home</small>
             </div>
 
@@ -163,7 +168,7 @@ if (isset($_GET['module_id'])) {
 
             <div class="form-group mb-3">
                 <label for="module_order"><i class="fas fa-sort-numeric-up"></i> 显示排序</label>
-                <input type="number" id="module_order" name="module_order" class="form-control" value="<?= htmlspecialchars($module_order); ?>">
+                <input type="number" id="module_order" name="module_order" class="form-control" value="<?= htmlspecialchars($module_order ?: 0); ?>">
             </div>
 
             <button type="submit" class="btn btn-primary w-100">
@@ -176,6 +181,87 @@ if (isset($_GET['module_id'])) {
         </div>
     </div>
 
+    <!-- 搜索输入框 + 图标列表 Modal -->
+    <div class="modal fade" id="iconPickerModal" tabindex="-1" aria-labelledby="iconPickerLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="iconPickerLabel"><i class="fas fa-icons"></i> 选择图标</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="iconSearch" class="form-control mb-3" placeholder="搜索图标关键词（如：user、chart、file）...">
+                    <div class="row text-center" id="iconList" style="max-height:500px;overflow-y:auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allIcons = {};
+
+        function showIconPicker() {
+            // 第一次加载时获取 icons.json
+            if (Object.keys(allIcons).length === 0) {
+                fetch('/assets/data/icons.json')
+                    .then(res => res.json())
+                    .then(data => {
+                        allIcons = data;
+                        renderIcons('');
+                    });
+            } else {
+                renderIcons('');
+            }
+
+            new bootstrap.Modal(document.getElementById('iconPickerModal')).show();
+        }
+
+        function renderIcons(filter = '') {
+            const list = document.getElementById('iconList');
+            list.innerHTML = '';
+            const keywords = filter.trim().toLowerCase();
+
+            let count = 0;
+
+            for (const icon in allIcons) {
+                if (keywords && !icon.includes(keywords)) continue;
+                const className = "fas fa-" + icon;
+
+                const div = document.createElement('div');
+                div.className = 'col-2 mb-3';
+                div.innerHTML = `
+            <button class="btn btn-light w-100" onclick="selectIcon('${className}')">
+                <i class="${className} fa-2x"></i><br><small>${icon}</small>
+            </button>
+        `;
+                list.appendChild(div);
+                count++;
+
+                if (count >= 300) break; // 限制初次加载图标数量，防止太卡
+            }
+
+            if (count === 0) {
+                list.innerHTML = '<div class="col-12 text-muted">未找到相关图标</div>';
+            }
+        }
+
+        function selectIcon(icon) {
+            document.getElementById('module_icon').value = icon;
+            bootstrap.Modal.getInstance(document.getElementById('iconPickerModal')).hide();
+        }
+
+        // 搜索事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('iconSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    renderIcons(this.value);
+                });
+            }
+        });
+    </script>
+
     <script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
