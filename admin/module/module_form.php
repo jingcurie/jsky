@@ -181,7 +181,7 @@ if (isset($_GET['module_id'])) {
         </div>
     </div>
 
-    <!-- 搜索输入框 + 图标列表 Modal -->
+    <!-- 图标选择器弹窗（可搜索 + 支持别名） -->
     <div class="modal fade" id="iconPickerModal" tabindex="-1" aria-labelledby="iconPickerLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -199,14 +199,15 @@ if (isset($_GET['module_id'])) {
 
     <script>
         let allIcons = {};
+        let aliasMap = {}; // 别名到主名映射
 
         function showIconPicker() {
-            // 第一次加载时获取 icons.json
             if (Object.keys(allIcons).length === 0) {
                 fetch('/assets/data/icons.json')
                     .then(res => res.json())
                     .then(data => {
                         allIcons = data;
+                        aliasMap = buildAliasMap(data);
                         renderIcons('');
                     });
             } else {
@@ -216,28 +217,54 @@ if (isset($_GET['module_id'])) {
             new bootstrap.Modal(document.getElementById('iconPickerModal')).show();
         }
 
+        function buildAliasMap(data) {
+            const map = {};
+            for (const key in data) {
+                map[key] = key; // 主名指向自己
+                const aliases = data[key].aliases?.names || [];
+                aliases.forEach(alias => {
+                    map[alias] = key; // alias 指向主名
+                });
+            }
+            return map;
+        }
+
         function renderIcons(filter = '') {
             const list = document.getElementById('iconList');
             list.innerHTML = '';
             const keywords = filter.trim().toLowerCase();
-
             let count = 0;
+            const freeStyles = ['solid', 'regular', 'brands'];
+            const rendered = new Set();
 
-            for (const icon in allIcons) {
-                if (keywords && !icon.includes(keywords)) continue;
-                const className = "fas fa-" + icon;
+            for (const alias in aliasMap) {
+                if (keywords && !alias.includes(keywords)) continue;
+
+                const icon = aliasMap[alias];
+                if (rendered.has(icon)) continue; // 避免重复渲染
+                if (!allIcons[icon]) continue;
+
+                const iconData = allIcons[icon];
+                const styles = iconData.styles;
+                const hasFreeStyle = styles.some(s => freeStyles.includes(s));
+                if (!hasFreeStyle) continue;
+
+                let prefix = styles.includes('solid') ? 'fas' :
+                    styles.includes('brands') ? 'fab' :
+                    styles.includes('regular') ? 'far' : 'fas';
+
+                const className = `${prefix} fa-${icon}`;
 
                 const div = document.createElement('div');
                 div.className = 'col-2 mb-3';
                 div.innerHTML = `
-            <button class="btn btn-light w-100" onclick="selectIcon('${className}')">
-                <i class="${className} fa-2x"></i><br><small>${icon}</small>
-            </button>
-        `;
+      <button class="btn btn-light w-100" onclick="selectIcon('${className}')">
+        <i class="${className} fa-2x"></i><br><small>${alias}</small>
+      </button>
+    `;
                 list.appendChild(div);
+                rendered.add(icon);
                 count++;
-
-                if (count >= 300) break; // 限制初次加载图标数量，防止太卡
             }
 
             if (count === 0) {
@@ -250,7 +277,6 @@ if (isset($_GET['module_id'])) {
             bootstrap.Modal.getInstance(document.getElementById('iconPickerModal')).hide();
         }
 
-        // 搜索事件
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('iconSearch');
             if (searchInput) {
@@ -260,7 +286,6 @@ if (isset($_GET['module_id'])) {
             }
         });
     </script>
-
     <script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 

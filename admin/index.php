@@ -14,7 +14,8 @@ if (!isLoggedIn()) {
 
 // 获取当前用户的角色 ID
 $user_role_id = $_SESSION['role_id'] ?? null;
-
+//user信息
+$user = getById($conn, "users", "user_id", $user_role_id);
 
 // 获取当前用户有权限访问的模块
 $stmt = $conn->prepare("
@@ -29,6 +30,8 @@ $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // 文章分类
 $category_stmt = $conn->query("SELECT id, name FROM categories WHERE is_deleted = 0 ORDER BY name ASC");
 $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -50,13 +53,6 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="sidebar" id="sidebar">
-        <!-- <div class="top-bar">
-            <div class="welcome-message">
-                <i class="fas fa-user-circle"></i>
-                <span id="welcome-text">欢迎回来，<?= htmlspecialchars($_SESSION['username']) ?></span>
-                <span id="current-time"></span>
-            </div>
-        </div> -->
         <div class="hamburger">
             <a href="/admin"><img src="/assets/images/jinshan_logo2.png" alt="Logo" class="logo"></a> <!-- 👈 换成你的 logo 路径 -->
             <div class="toggle-btn" onclick="toggleSidebar()">
@@ -65,7 +61,8 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="welcome-message">
             <div class="avatar">
-                <i class="fas fa-user-circle"></i>
+                <!-- <i class="fas fa-user-circle"></i> -->
+                <img src="/assets/images/avatars/<?= htmlspecialchars($user['avatar'] ?? 'a2.png') ?>" width="40" height="40" class="rounded-circle border">
             </div>
             <div class="welcome-text">
                 <div id="welcome-text">欢迎您，<?= htmlspecialchars($_SESSION['username']) ?></div>

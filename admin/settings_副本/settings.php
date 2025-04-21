@@ -46,20 +46,6 @@ function uploadLogo($fileInput, $prefix) {
 }
 
 // 处理删除请求（IP、Banner）
-function isValidIpOrCidr($input) {
-    if (filter_var($input, FILTER_VALIDATE_IP)) {
-        return true;
-    }
-
-    // 检查 CIDR 格式：如 192.168.1.0/24
-    if (preg_match('/^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$/', $input)) {
-        list($ip, $mask) = explode('/', $input);
-        return filter_var($ip, FILTER_VALIDATE_IP) && $mask >= 0 && $mask <= 32;
-    }
-
-    return false;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
     $id = intval($_POST['delete_id']);
     if ($_POST['category_id'] === "whitelist") {
@@ -94,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_ip'])) {
     csrfProtect();
     $ip = trim($_POST['new_ip']);
-    if (!isValidIpOrCidr($ip)) {
-        $error = "无效的 IP 或 CIDR 格式！";
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        $error = "无效的 IP 地址格式！";
     } else {
         $exists = query($conn, "SELECT COUNT(*) as count FROM allowed_ips WHERE ip_address = ?", [$ip]);
         if ($exists[0]['count'] > 0) {

@@ -570,3 +570,8 @@ iframe {
 .row .col-md-3:nth-child(4) .small-card {
     background: linear-gradient(135deg, #8de3c4, #a2f0d4);
 }
+
+/* module.php */
+.module-icon i{
+    font-size:16pt;
+}

@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
 
 // 查询所有未被删除的用户
 $users = query($conn, "
-    SELECT users.user_id, users.username, users.email, roles.role_name
+    SELECT users.user_id, users.username, users.email, users.avatar, roles.role_name
     FROM users
     LEFT JOIN roles ON users.role_id = roles.role_id
     WHERE users.is_deleted = 0
@@ -83,7 +83,7 @@ $users = query($conn, "
             <thead>
                 <tr>
                     <th>序号</th>
-                    <th>用户名</th>
+                    <th>用户</th>
                     <th>邮箱</th>
                     <th>角色</th>
                     <th>操作</th>
@@ -94,7 +94,10 @@ $users = query($conn, "
                 <?php foreach ($users as $user): $count++; ?>
                     <tr>
                         <td><?= $count ?></td>
-                        <td><?= htmlspecialchars($user['username']) ?></td>
+                        <td>
+                        <img src="/assets/images/avatars/<?= htmlspecialchars($user['avatar'] ?? 'a1.png') ?>" width="40" height="40" class="rounded-circle border">
+                            <?= htmlspecialchars($user['username']) ?>
+                        </td>
                         <td><?= htmlspecialchars($user['email']) ?></td>
                         <td><?= htmlspecialchars($user['role_name'] ?: '未分配') ?></td>
                         <td>
@@ -116,4 +119,5 @@ $users = query($conn, "
     <script src="/assets/js/bootstrap.bundle.min.js"></script>
     <script src="<?= JS_URL ?>/admin.js"></script>
 </body>
+
 </html>

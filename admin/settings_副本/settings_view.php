@@ -239,17 +239,23 @@
                     <!-- IP白名单设置 -->
                     <div class="tab-pane fade" id="ip-whitelist" role="tabpanel">
                         <!-- ✅ 开关：启用 IP 白名单限制 -->
-
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="ip_whitelist_enabled" id="ip_whitelist_enabled" value="1"
+      <?= !empty($settings['ip_whitelist_enabled']) ? 'checked' : '' ?>>
+    <label class="form-check-label" for="ip_whitelist_enabled">
+      启用 IP 白名单限制（当前已设置 <?= count($whitelisted_ips ?? []) ?> 条）
+    </label>
+  </div>
+  
                         <div class="mb-3">
                             <label for="new_ip" class="form-label">添加IP地址</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="new_ip" name="new_ip" placeholder="例如：123.45.67.89 或 192.168.0.0/24">
+                                <input type="text" class="form-control" id="new_ip" name="new_ip" placeholder="例如：123.45.67.89">
                                 <button class="btn btn-outline-secondary" type="submit" name="add_ip"><i class="fas fa-plus"></i> 添加</button>
                             </div>
-                            <small class="form-text text-muted">支持 CIDR 格式，例如：192.168.0.0/24</small>
                         </div>
 
-
+                
 
                         <?php if (!empty($whitelisted_ips)): ?>
                             <h5>已允许的IP地址</h5>
