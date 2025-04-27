@@ -43,10 +43,9 @@ if (!isset($_SESSION['device_logged'])) {
     <section class="content-wrapper">
         <div class="routes">
             <h2>线路查询</h2>
-            <p>提供丰富的公交线路信息，满足您的出行需求。</p>
-            <p>快速查看本地公交线路详情，包含运行方向、站点列表等信息，帮助您高效规划每一次出行</p>
+			<p>锦山客运始终秉持“锦山客运，服务金山”的理念，将安全行车，优良服务作为永恒的管理主题，为乘客提供安全无忧、舒适惬意、便捷高效的出行服务。</p>
             <div class="button">
-                <a href="bus_line_search_form.php">查看线路</a>
+                <a href="pages/bus_line_search_form.php">查看线路</a>
             </div>
         </div>
 
@@ -54,7 +53,7 @@ if (!isset($_SESSION['device_logged'])) {
         //require "includes/db.php";
         //var_dump($conn);
         // 查询分类为 1 的最新一篇文章
-        $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 1 and status = 'published' and is_deleted = 0 ORDER BY created_at DESC LIMIT 1";
+        $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 1 and status = 'published' ORDER BY created_at DESC LIMIT 1";
         $stmt = $conn->query($sql);
         // 获取查询结果
         $article = $stmt->fetch(PDO::FETCH_ASSOC); // fetch() 只获取一行数据
@@ -85,8 +84,10 @@ if (!isset($_SESSION['device_logged'])) {
 
         <div class="news" data-aos="fade-up" data-aos-duration="1500">
             <article class="card">
+               <h2>最新新闻</h2>
+               
                 <div>
-                    <h2>最新新闻</h2>
+                    
                     <a href="/pages/client_view_article.php?id=<?php echo $article['id']; ?>"><img src="<?= ARTICLE_URL ?><?php echo $cover_image; ?>" alt="新闻图片"></a>
 
                     <div class="summary"><?php echo $summary; ?>
@@ -104,7 +105,7 @@ if (!isset($_SESSION['device_logged'])) {
 
     <?php
     // 查询分类为 2 的最新 4 篇文章
-    $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 2 and status = 'published' and is_deleted = 0 ORDER BY created_at DESC LIMIT 4";
+    $sql = "SELECT id, title, created_at, author, cover_image, content FROM articles WHERE category_id = 2 and status = 'published' ORDER BY created_at DESC LIMIT 4";
     $stmt = $conn->query($sql);
     $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC); // 获取所有符合条件的文章
 
@@ -116,7 +117,7 @@ if (!isset($_SESSION['device_logged'])) {
             <div class="announcement-grid">
                 <?php if (!empty($announcements)): ?>
                     <?php foreach ($announcements as $article): ?>
-                        <article class="announcement card" data-aos="fade-up" data-aos-duration="1000">
+                        <article class="announcement card" data-aos="fade-up">
                             <div>
                                 <a href="/pages/client_view_article.php?id=<?= $article['id']; ?>"><img src="<?= ARTICLE_URL ?><?= htmlspecialchars($article['cover_image']) ?: 'assets/images/default_article_iamge.jpg'; ?>" alt="公告图片"></a>
                                 <p class="summary">

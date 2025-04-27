@@ -17,7 +17,8 @@ if (!isLoggedIn()) {
 $success = '';
 $error = '';
 
-function uploadLogo($fileInput, $prefix) {
+function uploadLogo($fileInput, $prefix)
+{
     $allowedTypes = ['image/jpeg', 'image/png'];
     $maxSize = 2 * 1024 * 1024;
 
@@ -46,7 +47,8 @@ function uploadLogo($fileInput, $prefix) {
 }
 
 // 处理删除请求（IP、Banner）
-function isValidIpOrCidr($input) {
+function isValidIpOrCidr($input)
+{
     if (filter_var($input, FILTER_VALIDATE_IP)) {
         return true;
     }
@@ -91,26 +93,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
             $error = "找不到要删除的 Banner！";
         }
     }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_ip'])) {
-    csrfProtect();
-    $ip = trim($_POST['new_ip']);
-    if (!isValidIpOrCidr($ip)) {
-        $error = "无效的 IP 或 CIDR 格式！";
-    } else {
-        $exists = query($conn, "SELECT COUNT(*) as count FROM allowed_ips WHERE ip_address = ?", [$ip]);
-        if ($exists[0]['count'] > 0) {
-            $error = "该 IP 已存在于白名单中！";
-        } else {
-            insert($conn, 'allowed_ips', ['ip_address' => $ip]);
-            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '添加', 'IP白名单', null, $ip);
-            $_SESSION['success'] = "IP 白名单添加成功！";
-            redirect('settings.php#whitelist');
-        }
-    }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+}elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrfProtect();
     try {
         $conn->beginTransaction();
+        // 清空 IP白名单，再批量插入新IP
+        if (isset($_POST['ip_list'])) {
+            $ipListRaw = trim($_POST['ip_list']);
+            $ipLines = explode("\n", $ipListRaw);
+            $ipLines = array_map('trim', $ipLines); // 去除空格
+            $ipLines = array_filter($ipLines); // 去除空行
+
+            // 重新清空 allowed_ips 表
+            execute($conn, "DELETE FROM allowed_ips");
+
+            foreach ($ipLines as $ip) {
+                if (!isValidIpOrCidr($ip)) {
+                    throw new Exception("无效的IP地址或CIDR格式：$ip");
+                }
+                insert($conn, 'allowed_ips', ['ip_address' => $ip]);
+            }
+
+            log_operation($conn, $_SESSION['user_id'], $_SESSION['username'], '更新', 'IP白名单', null, null);
+        }
 
         // 主 Logo 上传
         if (!empty($_FILES['site_logo_large']['tmp_name'])) {
@@ -126,9 +131,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_id'])) {
         foreach ($result as $row) {
             $settings[$row['setting_key']] = $row['setting_value'];
         }
-        
+
         if (!empty($_POST['remove_logo_large']) && !empty($settings['site_logo_large'])) {
-           
+
             @unlink('../../uploads/logos/' . $settings['site_logo_large']);
             update($conn, 'site_settings', 'setting_key', 'site_logo_large', ['setting_value' => '', 'setting_group' => 'basic']);
         }

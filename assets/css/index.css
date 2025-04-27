@@ -92,7 +92,8 @@
     border-radius:5px;
 }
 
-.news .card h2{
+
+/*.news .card h2{
     position:absolute;
     left:0;
     top:20%;
@@ -100,6 +101,16 @@
     padding:1rem 3rem;
     background-color:#002147;
     color:white;
+    letter-spacing: 1rem;
+  }
+*/
+
+.news .card h2{
+    font-size:32pt;
+    background-color:#002147;
+    color:white;
+    padding:0.2rem 0.8rem;
+    margin:0;
     letter-spacing: 1rem;
   }
 

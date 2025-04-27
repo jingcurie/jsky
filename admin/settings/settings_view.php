@@ -238,52 +238,27 @@
 
                     <!-- IP白名单设置 -->
                     <div class="tab-pane fade" id="ip-whitelist" role="tabpanel">
-                        <!-- ✅ 开关：启用 IP 白名单限制 -->
 
                         <div class="mb-3">
-                            <label for="new_ip" class="form-label">添加IP地址</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="new_ip" name="new_ip" placeholder="例如：123.45.67.89 或 192.168.0.0/24">
-                                <button class="btn btn-outline-secondary" type="submit" name="add_ip"><i class="fas fa-plus"></i> 添加</button>
-                            </div>
-                            <small class="form-text text-muted">支持 CIDR 格式，例如：192.168.0.0/24</small>
+                            <label for="ip_list" class="form-label">IP白名单列表</label>
+                            <textarea class="form-control" id="ip_list" name="ip_list" rows="10" placeholder="每行输入一个IP或CIDR，例如：192.168.1.1 或 10.0.0.0/24"><?php
+                                                                                                                                                            if (!empty($whitelisted_ips)) {
+                                                                                                                                                                $ips = array_column($whitelisted_ips, 'ip_address');
+                                                                                                                                                                echo htmlspecialchars(implode("\n", $ips));
+                                                                                                                                                            }
+                                                                                                                                                            ?></textarea>
+                            <small class="form-text text-muted">支持IP或CIDR格式，每行一个。例如：123.45.67.89 或 192.168.1.0/24。系统会自动去重和排序。</small>
+
+                            <div id="ip_list_error" class="text-danger mt-2" style="display: none;"></div>
                         </div>
 
 
-
-                        <?php if (!empty($whitelisted_ips)): ?>
-                            <h5>已允许的IP地址</h5>
-                            <ul class="list-group">
-                                <?php foreach ($whitelisted_ips as $ip): ?>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <?php echo htmlspecialchars($ip["ip_address"]) ?>
-                                        <!-- <a href="?delete_id=<?= urlencode($ip["id"]) ?>" class="btn btn-sm btn-delete"
-                                            onclick="return confirm('确定要移除该IP地址吗？');">
-                                            <i class="fas fa-trash"></i>删除
-                                        </a> -->
-                                        <?php
-                                        $ip_label = 'IP地址: ' . $ip['ip_address'];
-                                        $ip_label_js = addslashes($ip_label); // 防止引号打断JS语法
-                                        $ip_id = $ip['id'];
-                                        ?>
-                                        <button type="button" class="btn btn-sm btn-delete"
-                                            onclick="openDeleteModal2('<?= $ip_label_js ?>', '<?= htmlspecialchars($ip_id) ?>','whitelist')">
-                                            <i class="fas fa-trash"></i> 删除
-                                        </button>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else: ?>
-                            <p class="text-muted">当前未设置任何IP白名单。</p>
-                        <?php endif; ?>
-                        <br>
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="ip_whitelist_enabled" name="ip_whitelist_enabled" <?= !empty($settings['ip_whitelist_enabled']) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="ip_whitelist_enabled">启用 IP 白名单限制</label>
                             <small class="text-muted d-block mt-1">启用后，只有白名单内的 IP 可以访问后台管理系统。</small>
                         </div>
                     </div>
-
 
                     <!-- 性能设置 -->
                     <div class="tab-pane fade" id="performance" role="tabpanel">
@@ -349,6 +324,51 @@
                 }
             }
         </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ipListTextarea = document.getElementById('ip_list');
+                const errorDiv = document.getElementById('ip_list_error');
+                const form = ipListTextarea.closest('form');
+
+                function validateAndCleanIpList() {
+                    let lines = ipListTextarea.value.split('\n').map(line => line.trim()).filter(line => line !== '');
+                    let validIps = [];
+                    let invalidIps = [];
+
+                    const ipRegex = /^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/;
+
+                    lines.forEach(ip => {
+                        if (ipRegex.test(ip)) {
+                            validIps.push(ip);
+                        } else {
+                            invalidIps.push(ip);
+                        }
+                    });
+
+                    // 如果有非法IP
+                    if (invalidIps.length > 0) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = '检测到无效的IP地址：' + invalidIps.join(', ');
+                        form.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        errorDiv.style.display = 'none';
+                        form.querySelector('button[type="submit"]').disabled = false;
+
+                        // 去重并排序
+                        validIps = Array.from(new Set(validIps));
+                        validIps.sort((a, b) => a.localeCompare(b, undefined, {
+                            numeric: true,
+                            sensitivity: 'base'
+                        }));
+
+                        ipListTextarea.value = validIps.join('\n');
+                    }
+                }
+
+                ipListTextarea.addEventListener('blur', validateAndCleanIpList); // 离开时校验
+            });
+        </script>
+
     </body>
 
     </html>
