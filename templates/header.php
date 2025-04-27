@@ -99,7 +99,7 @@ function renderMenu($menus, $parent_id = 0, $level = 0)
     <header>
         <div class="header-container">
             <div class="logo">
-                <h1><a href="/" onclick="handleLogoClick(event)"><img src="<?= IMG_URL ?>/jinshan_logo.png" alt="公司logo"></a></h1>
+                <h1><a href="/" onclick="handleLogoClick(event)"><img src="<?= LOGO_URL . '/' .$settings['site_logo_large'] ?>" alt="公司logo"></a></h1>
             </div>
 
             <script>

@@ -121,7 +121,7 @@
                         </div> -->
                         <!--  主 LOGO（PC端） -->
                         <div class="mb-3">
-                            <label for="site_logo_large" class="form-label">主 LOGO（PC端）</label>
+                            <label for="site_logo_large" class="form-label">大 LOGO</label>
                             <input type="file" class="form-control" name="site_logo_large" accept="image/png,image/jpeg">
 
                             <?php if (!empty($settings['site_logo_large'])): ?>

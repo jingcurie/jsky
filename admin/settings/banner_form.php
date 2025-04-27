@@ -1,15 +1,15 @@
 
 <?php
 // 错误报告设置（开发环境）
-// error_reporting(E_ALL);          // 报告所有PHP错误
-// ini_set('display_errors', 1);    // 在页面上显示错误
-// ini_set('display_startup_errors', 1); // 显示启动错误
+error_reporting(E_ALL);          // 报告所有PHP错误
+ini_set('display_errors', 1);    // 在页面上显示错误
+ini_set('display_startup_errors', 1); // 显示启动错误
 
 require_once __DIR__ . '/../../includes/config.php';
 require INCLUDE_PATH . '/db.php';
 require_once INCLUDE_PATH . '/check_ip_whitelist.php';
 require INCLUDE_PATH . '/auth.php';
-require INCLUDE_PATH . '/functions.php';
+require_once INCLUDE_PATH . '/functions.php';
 
 if (!isLoggedIn()) {
     redirect('/admin/login.php');
@@ -72,8 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadPath = __DIR__ . "/../.." .BANNER_URL . $filename;
             
             // 确保上传目录存在
-            if (!is_dir(BANNER_URL)) {
-                mkdir(BANNER_URL, 0755, true);
+            if (!is_dir(__DIR__ . "/../../uploads/banners")) {
+                mkdir(__DIR__ . "/../../uploads/banners", 0755, true);
             }
         
             if (move_uploaded_file($_FILES['banner_image']['tmp_name'], $uploadPath)) {

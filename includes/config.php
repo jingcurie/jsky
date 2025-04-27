@@ -12,7 +12,7 @@ define('LOGO_PATH', UPLOAD_PATH . '/logos/');
 define('UPLOAD_URL','/uploads');
 define('BANNER_URL', UPLOAD_URL . '/banners/');
 define('ARTICLE_URL', UPLOAD_URL . '/articles/');
-define('LOGO_URL', UPLOAD_URL . '/Logos/');
+define('LOGO_URL', UPLOAD_URL . '/logos/');
 
 define('IMG_URL', '/assets/images');
 define('CSS_URL', '/assets/css');

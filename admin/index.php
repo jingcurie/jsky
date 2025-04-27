@@ -31,6 +31,7 @@ $modules = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $category_stmt = $conn->query("SELECT id, name FROM categories WHERE is_deleted = 0 ORDER BY name ASC");
 $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+$settings = getSettings($conn);
 
 ?>
 
@@ -54,7 +55,7 @@ $categories = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="sidebar" id="sidebar">
         <div class="hamburger">
-            <a href="/admin"><img src="/assets/images/jinshan_logo2.png" alt="Logo" class="logo"></a> <!-- 👈 换成你的 logo 路径 -->
+            <a href="/admin"><img src="<?= LOGO_URL . '/' .$settings['site_logo_small'] ?>" alt="Logo" class="logo"></a> <!-- 👈 换成你的 logo 路径 -->
             <div class="toggle-btn" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </div>
